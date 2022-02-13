@@ -1,0 +1,62 @@
+private boolean quotedStart = false;
+	private boolean addWord = false;
+	private boolean addChar = false;
+	private boolean skipNext = false;
+
+	private String condChecker(String temp, char charX, int currPos, int length) {
+
+		if (this.skipNext == true) {
+			this.skipNext = false;
+			return temp;
+		}
+		
+		if (this.isLastQuote())) {
+			this.addWord=true;
+			this.quotedStart=false;
+		}
+		
+		if (this.consecutiveQuote()){
+			this.addChar = true;
+			this.skipNext = true;
+		}
+		
+		if(this.quoteEnd()) {
+			this.quotedStart=false;
+			return temp;
+		}
+		
+		if (this.quoteStart()) {
+			this.quotedStart=true;
+			return temp;
+		}
+		
+		if (this.isDelimAdded()) {
+			this.addChar = true;
+		}
+		
+		if (this.isEntryEnd()) {
+			this.addWord=true;
+		}
+		
+		if (this.isLastChar()) {
+			this.addChar=true;
+			this.addWord=true;
+		}
+		
+		if (ok()) {
+			this.addChar=true;
+		}
+
+		// de inlaturat functia de mai sus si inversat logica; by default adaug caracterul si la exceptii sar
+		// add word functie separata si aici doar ridic steag care indica necesitatea 
+		
+		if (this.addChar == true) {
+			this.addChar = false;
+			temp = temp + charX;
+		}
+
+		if (this.addWord == true) {
+			this.addWord = false;
+			this.results.add(temp);
+		}
+		return temp;
