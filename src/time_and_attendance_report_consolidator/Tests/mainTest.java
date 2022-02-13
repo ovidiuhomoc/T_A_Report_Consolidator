@@ -11,6 +11,7 @@ public class mainTest {
 		System.out.println(ran.randomTextAlphaNumericAndBeginWithSymbols(20));
 		System.out.println(ran.randomTextAlphaNumericAndEndWithSymbols(20));
 		System.out.println(ran.randomTextAlphaNumericAndSymbolsBalancedDistribution(20));
+		System.out.println(ran.randomTextAlphaNumericAndSymbolsBalancedDistribution(20));
 	}
 
 }
