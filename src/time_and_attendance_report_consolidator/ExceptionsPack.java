@@ -13,4 +13,10 @@ public class ExceptionsPack {
 			super(msg, cause);
 		}
 	}
+	
+	public static class profileDoesNotExist extends Exception {
+		public profileDoesNotExist(String msg) {
+			super(msg);
+		}
+	}
 }

@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import time_and_attendance_report_consolidator.ExceptionsPack.profileDoesNotExist;
+
 public class Profile {
 	private String name;
 	protected static int count = 0;
@@ -18,11 +20,10 @@ public class Profile {
 	 * @param name a String variable containing the profile name
 	 */
 	public Profile(String name) {
-		Profile.count++;
 		this.name = name;
 		Profile.all.add(this);
 
-		if (Profile.count == 1) {
+		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
 	}
@@ -32,13 +33,17 @@ public class Profile {
 	 * name parameter a default "Profile " + count.
 	 */
 	public Profile() {
-		Profile.count++;
-		this.name = "Profile " + count;
+		this.name = "Profile " + (Profile.noOfProfiles() + 1);
 		Profile.all.add(this);
 
-		if (Profile.count == 1) {
+		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
+	}
+
+	public static void reset() {
+		Profile.active = null;
+		Profile.all.clear();
 	}
 
 	/**
@@ -88,25 +93,52 @@ public class Profile {
 		return Profile.active;
 	}
 
+	private boolean isActive() {
+		if (this == Profile.active) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isLast() {
+		if (Profile.noOfProfiles() == 1) {
+			return true;
+		}
+		return false;
+	}
+
+	private static int noOfProfiles() {
+		return all.size();
+	}
+
 	/**
 	 * A static method (accessed by Profile.removeProfile(Profile)) that completely
 	 * remove the profile clearing all dependencies such active profile or the Set
 	 * of profiles, if needed
 	 * 
 	 * @param profile is the object of type Profile to be removed
+	 * @throws profileDoesNotExist
 	 */
-	public static void removeProfile(Profile profile) {
-		if (Profile.all.contains(profile)) {
-			if (Profile.active.equals(profile)) {
-				if (Profile.all.size() == 1) {
-					Profile.active = null;
-				} else {
-					Profile.active = Profile.toArray()[0];
-				}
-			}
-			Profile.all.remove(profile);
-			Profile.count--;
+	public static void removeProfile(Profile profile) throws profileDoesNotExist {
+		if (profile == null) {
+			return;
 		}
+
+		if (!Profile.all.contains(profile)) {
+			throw new ExceptionsPack.profileDoesNotExist(
+					"The provided profiles does not exist into the stored list of profiles");
+		}
+
+		if (profile.isActive()) {
+			Profile.active = Profile.toArray()[0];
+		}
+
+		if (profile.isLast()) {
+			Profile.active = null;
+
+		}
+
+		Profile.all.remove(profile);
 	}
 
 	// Profile duplicate - copie tot ce se poate copia
@@ -352,9 +384,10 @@ public class Profile {
 			this.connections.remove(conn);
 		}
 	}
-	
+
 	/**
 	 * Getter used to return the active connection.
+	 * 
 	 * @return a Connection type object
 	 */
 	public Connection getActiveConn() {
