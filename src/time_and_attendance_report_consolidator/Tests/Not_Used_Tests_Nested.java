@@ -17,7 +17,7 @@ import time_and_attendance_report_consolidator.ExceptionsPack;
 import time_and_attendance_report_consolidator.Profile;
 import java.util.Objects;
 
-class Tests_Nested {
+class Not_Used_Tests_Nested {
 
 	@Nested
 	@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
