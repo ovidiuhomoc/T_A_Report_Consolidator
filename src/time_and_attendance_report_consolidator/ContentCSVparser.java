@@ -10,6 +10,21 @@ public class ContentCSVparser {
 	private boolean charSkipFlag = false;
 	private String citationMark = String.valueOf('"');
 
+	public String[] parseCSVrow(String content, String delimiter) {
+		setDelimiter(delimiter);
+		this.results.clear();
+
+		for (int i = 0; i <= content.length() - 1; i++) {
+			if (i != (content.length() - 1)) {
+				this.parseCurrentChar(String.valueOf(content.charAt(i)), String.valueOf(content.charAt(i + 1)));
+			} else {
+				this.parseCurrentChar(String.valueOf(content.charAt(i)), null);
+			}
+		}
+
+		return results.toArray(new String[0]);
+	}
+
 	private void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
 	}
@@ -148,20 +163,6 @@ public class ContentCSVparser {
 		}
 
 		this.addCurrentChar(currentChar);
-	}
-
-	public String[] parseCSVrow(String content, String delimiter) {
-		setDelimiter(delimiter);
-
-		for (int i = 0; i <= content.length() - 1; i++) {
-			if (i != (content.length() - 1)) {
-				this.parseCurrentChar(String.valueOf(content.charAt(i)), String.valueOf(content.charAt(i + 1)));
-			} else {
-				this.parseCurrentChar(String.valueOf(content.charAt(i)), null);
-			}
-		}
-
-		return results.toArray(new String[0]);
 	}
 
 }

@@ -1,9 +1,11 @@
 package time_and_attendance_report_consolidator;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import time_and_attendance_report_consolidator.ExceptionsPack.nullNameConnection;
 import time_and_attendance_report_consolidator.ExceptionsPack.profileDoesNotExist;
 
 public class Profile {
@@ -141,9 +143,19 @@ public class Profile {
 		Profile.all.remove(profile);
 	}
 
-	// Profile duplicate - copie tot ce se poate copia
-	// Save profile to XML to be implemented
-	// Load profile from XML to be implemented
+	public void createCopy() {
+		// Profile duplicate - copie tot ce se poate copia
+	}
+
+	public boolean saveProfile() {
+		// Save profile to XML to be implemented
+		return false;
+	}
+
+	public boolean loadProfile() {
+		// Load profile from XML to be implemented
+		return false;
+	}
 
 	/*
 	 * ======================== Section 2 ========================
@@ -162,7 +174,7 @@ public class Profile {
 	 * @param period is the number of months (int) for which the T&A reports should
 	 *               run
 	 */
-	public void setRepPeriod(int period) {
+	public void setRepMonthsPeriod(int period) {
 		this.repPeriod = period;
 	}
 
@@ -172,7 +184,7 @@ public class Profile {
 	 * 
 	 * @return an int representing the number of months for which T&A report to run
 	 */
-	public int getRepPeriod() {
+	public int getRepMonthsPeriod() {
 		return this.repPeriod;
 	}
 
@@ -266,7 +278,28 @@ public class Profile {
 	 */
 
 	private Set<Connection> connections = new HashSet<Connection>();
-	private Connection activeConn;
+	private Connection activeConn = null;
+
+	private Connection getConnectionByName(String connName) {
+		Connection connContainer = null;
+
+		Iterator<Connection> connectionsIterator = this.connections.iterator();
+		while (connectionsIterator.hasNext()) {
+			Connection currentConnection = connectionsIterator.next();
+			if (currentConnection.getName().equals(connName)) {
+				return currentConnection;
+			}
+		}
+		return connContainer;
+	}
+
+	private boolean doesConnectionExist(String connName) {
+		Connection connToBeFound = getConnectionByName(connName);
+		if (connToBeFound != null) {
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * This method takes several parameters that describe the minimum of a
@@ -282,34 +315,31 @@ public class Profile {
 	 * @param file      The full path towards the file (including file name and
 	 *                  extension)
 	 * @param delimiter The delimiter that should be used for CSV parsing.
+	 * @throws nullNameConnection
 	 */
-	public void setCSVConn(String connName, String file, String delimiter) {
-		boolean duplicateFlag = false;
-		Connection temp = null;
+	public void setCSVConn(String connName, String file, String delimiter) throws nullNameConnection {
 		Connection newConn;
 
-		Iterator<Connection> it = this.connections.iterator();
-		while (it.hasNext()) {
-			Connection temp2 = it.next();
-			if (temp2.getName().equals(connName)) {
-				duplicateFlag = true;
-				temp = temp2;
-			}
+		if (connName == null) {
+			throw new ExceptionsPack.nullNameConnection("Connection can't be set with a null name");
 		}
 
-		if (duplicateFlag) {
-			newConn = temp;
+		if (this.doesConnectionExist(connName)) {
+			newConn = this.getConnectionByName(connName);
 		} else {
 			newConn = new Connection();
 		}
 
 		newConn.setConnection(connName, "CSV", file);
 		newConn.setCSVDelimiter(delimiter);
-		this.connections.add(newConn);
-
 		if (this.connections.size() == 0) {
 			this.activeConn = newConn;
 		}
+		this.connections.add(newConn);
+
+		// ----------------------------------------------------------am ramas aici. de
+		// testat metoda + toate metodele de aici si cele din clasa Connection +
+		// modificat metoda de mai jos
 	}
 
 	/**
@@ -326,33 +356,26 @@ public class Profile {
 	 * @param connName The name of the connection in current profile
 	 * @param file     The full path towards the file (including file name and
 	 *                 extension)
+	 * @throws nullNameConnection 
 	 */
-	public void setCSVConn(String connName, String file) {
-		boolean duplicateFlag = false;
-		Connection temp = null;
+	public void setCSVConn(String connName, String file) throws nullNameConnection {
 		Connection newConn;
 
-		Iterator<Connection> it = this.connections.iterator();
-		while (it.hasNext()) {
-			Connection temp2 = it.next();
-			if (temp2.getName().equals(connName)) {
-				duplicateFlag = true;
-				temp = temp2;
-			}
+		if (connName == null) {
+			throw new ExceptionsPack.nullNameConnection("Connection can't be set with a null name");
 		}
 
-		if (duplicateFlag) {
-			newConn = temp;
+		if (this.doesConnectionExist(connName)) {
+			newConn = this.getConnectionByName(connName);
 		} else {
 			newConn = new Connection();
 		}
 
 		newConn.setConnection(connName, "CSV", file);
-		this.connections.add(newConn);
-
 		if (this.connections.size() == 0) {
 			this.activeConn = newConn;
 		}
+		this.connections.add(newConn);
 	}
 
 	/**
@@ -366,6 +389,20 @@ public class Profile {
 		return arr;
 	}
 
+	private boolean isTheActiveConnection(Connection testConn) {
+		if (this.activeConn.equals(testConn)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isLastConnection(Connection testConn) {
+		if (this.connections.size() == 1) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Method that removes a specific connection from the list of connections of the
 	 * object Profile, together with all dependent relations
@@ -373,16 +410,23 @@ public class Profile {
 	 * @param conn a Connection type object to be removed from profile Set
 	 */
 	public void removeConnection(Connection conn) {
-		if (this.connections.contains(conn)) {
-			if (this.activeConn.equals(conn)) {
-				if (this.connections.size() == 1) {
-					this.activeConn = null;
-				} else {
-					this.activeConn = this.connectionsToArray()[0];
-				}
-			}
-			this.connections.remove(conn);
+		if (conn == null) {
+			return;
 		}
+
+		if (!this.doesConnectionExist(conn.getName())) {
+			return;
+		}
+
+		if (this.isTheActiveConnection(conn)) {
+			this.activeConn = this.connectionsToArray()[0];
+		}
+
+		if (isLastConnection(conn)) {
+			this.activeConn = null;
+		}
+
+		this.connections.remove(conn);
 	}
 
 	/**

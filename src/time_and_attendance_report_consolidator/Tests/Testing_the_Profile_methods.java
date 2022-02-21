@@ -20,7 +20,7 @@ class Testing_the_Profile_methods {
 	void Testing_set_name() {
 		int count = 0;
 		ArrayList<Profile> profileArray = new ArrayList<Profile>();
-		Random_Generator random = new Random_Generator();
+		Tools_Random_Generator random = new Tools_Random_Generator();
 		String string = "";
 
 		Profile.reset();
@@ -73,7 +73,7 @@ class Testing_the_Profile_methods {
 	void Testing_toArray() {
 		int count = 0;
 		ArrayList<Profile> profileArray = new ArrayList<Profile>();
-		Random_Generator random = new Random_Generator();
+		Tools_Random_Generator random = new Tools_Random_Generator();
 		String string = "";
 
 		Profile.reset();
@@ -107,7 +107,7 @@ class Testing_the_Profile_methods {
 		string = null;
 		profileArray.add(new Profile(string));
 
-		assertTrue(new Test_Array_Equality().TestProfileArrayUnorderedEquality(profileArray.toArray(new Profile[0]),
+		assertTrue(new Tools_Array_Equality_Test().TestProfileArrayUnorderedEquality(profileArray.toArray(new Profile[0]),
 				Profile.toArray()));
 	}
 
@@ -115,7 +115,7 @@ class Testing_the_Profile_methods {
 	void Testing_Active_Profile_and_Removing() {
 		int count = 0;
 		ArrayList<Profile> profileArray = new ArrayList<Profile>();
-		Random_Generator random = new Random_Generator();
+		Tools_Random_Generator random = new Tools_Random_Generator();
 
 		Profile.reset();
 

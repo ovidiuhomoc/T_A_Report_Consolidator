@@ -29,7 +29,7 @@ class Testing_the_Profile_setup {
 		profileArray.add(new Profile());
 		assertEquals("Profile " + count, profileArray.get(count - 1).getName());
 
-		Random_Generator random = new Random_Generator();
+		Tools_Random_Generator random = new Tools_Random_Generator();
 		String string = "";
 
 		// Testing constructor with name + random type 1

@@ -19,4 +19,10 @@ public class ExceptionsPack {
 			super(msg);
 		}
 	}
+	
+	public static class nullNameConnection extends Exception {
+		public nullNameConnection(String msg) {
+			super(msg);
+		}
+	}
 }

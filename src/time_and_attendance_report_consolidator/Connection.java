@@ -20,25 +20,6 @@ public class Connection {
 		this.path = file;
 	}
 
-	/*
-	 * required for recycling; connection tests will be done at the moment of
-	 * parsing file public void setConnection(String name, String type, String file)
-	 * throws IOException { this.name = name; this.type = type; this.file = file;
-	 * 
-	 * if (file.length() > 4) { String extension = file.substring(file.length() -
-	 * 3);
-	 * 
-	 * if (extension.equals("csv") || extension.equals("CSV")) {
-	 * 
-	 * File csvFile = new File(file); if (!csvFile.isFile()) { throw new
-	 * IllegalArgumentException("File can't be accessed!"); }
-	 * 
-	 * BufferedReader csvReader = new BufferedReader(new FileReader(file));
-	 * csvReader.close(); } else { throw new
-	 * IllegalArgumentException("Not CSV file!"); } } else { throw new
-	 * IllegalArgumentException("Unexpected short file name!"); } }
-	 */
-
 	private String delimiter = ",";
 
 	public void setCSVDelimiter(String delimiter) {
