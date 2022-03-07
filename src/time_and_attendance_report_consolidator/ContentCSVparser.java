@@ -11,10 +11,12 @@ public class ContentCSVparser {
 	private String citationMark = String.valueOf('"');
 
 	public String[] parseCSVrow(String content, String delimiter) {
+		if (content == null) {
+			return null;
+		}
 		setDelimiter(delimiter);
 		this.results.clear();
-
-		for (int i = 0; i <= content.length() - 1; i++) {
+		for (int i = 0; i < content.length(); i++) {
 			if (i != (content.length() - 1)) {
 				this.parseCurrentChar(String.valueOf(content.charAt(i)), String.valueOf(content.charAt(i + 1)));
 			} else {
@@ -59,7 +61,7 @@ public class ContentCSVparser {
 	}
 
 	private boolean isCitationEndRowEnd(String currentChar, String nextChar) {
-		if (currentChar.equals('"') && nextChar == null) {
+		if (currentChar.equals(String.valueOf('"')) && nextChar == null) {
 			return true;
 		}
 		return false;

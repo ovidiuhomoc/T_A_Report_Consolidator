@@ -137,5 +137,16 @@ class Testing_the_connections_setup {
 		assertThrows(ExceptionsPack.nullNameConnection.class, () -> {
 			testProfile.setCSVConn(null, "C:\\" + null + ".csv",",");
 		});
+		
+		try {
+			testProfile.setCSVConn("Conn 1", "C:\\Docs\\1.csv");
+			testProfile.setCSVConn("Conn 2", "C:\\Docs\\2.csv");
+		} catch (nullNameConnection e) {
+			e.printStackTrace();
+		}
+		
+		assertEquals(testProfile.getConnectionByName("Conn 1"),testProfile.getActiveConn());
+		testProfile.setActiveConn(testProfile.getConnectionByName("Conn 2"));
+		assertEquals(testProfile.getConnectionByName("Conn 2"),testProfile.getActiveConn());
 	}
 }

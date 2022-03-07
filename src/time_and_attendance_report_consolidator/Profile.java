@@ -280,7 +280,7 @@ public class Profile {
 	private Set<Connection> connections = new HashSet<Connection>();
 	private Connection activeConn = null;
 
-	private Connection getConnectionByName(String connName) {
+	public Connection getConnectionByName(String connName) {
 		Connection connContainer = null;
 
 		Iterator<Connection> connectionsIterator = this.connections.iterator();
@@ -334,12 +334,9 @@ public class Profile {
 		newConn.setCSVDelimiter(delimiter);
 		if (this.connections.size() == 0) {
 			this.activeConn = newConn;
+			initializeHeader();
 		}
 		this.connections.add(newConn);
-
-		// ----------------------------------------------------------am ramas aici. de
-		// testat metoda + toate metodele de aici si cele din clasa Connection +
-		// modificat metoda de mai jos
 	}
 
 	/**
@@ -356,7 +353,7 @@ public class Profile {
 	 * @param connName The name of the connection in current profile
 	 * @param file     The full path towards the file (including file name and
 	 *                 extension)
-	 * @throws nullNameConnection 
+	 * @throws nullNameConnection
 	 */
 	public void setCSVConn(String connName, String file) throws nullNameConnection {
 		Connection newConn;
@@ -374,6 +371,7 @@ public class Profile {
 		newConn.setConnection(connName, "CSV", file);
 		if (this.connections.size() == 0) {
 			this.activeConn = newConn;
+			initializeHeader();
 		}
 		this.connections.add(newConn);
 	}
@@ -438,6 +436,11 @@ public class Profile {
 		return this.activeConn;
 	}
 
+	public void setActiveConn(Connection conn) {
+		this.activeConn = conn;
+		initializeHeader();
+	}
+
 	// SQL, Excel, HTML connections to be still setup
 
 	/*
@@ -450,4 +453,13 @@ public class Profile {
 	 * by user.
 	 */
 
+	Header header = null;
+
+	private void initializeHeader() {
+		header = new Header(this.getActiveConn());
+	}
+
+	public Header getHeader() {
+		return this.header;
+	}
 }

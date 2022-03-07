@@ -1,10 +1,5 @@
 package time_and_attendance_report_consolidator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import time_and_attendance_report_consolidator.ExceptionsPack.scanError;
@@ -13,7 +8,6 @@ public class Header {
 
 	private ArrayList<HeaderEntry> selectedHeader = new ArrayList<HeaderEntry>();
 	private Connection connection;
-	private boolean scanActive = false;
 	private Exception encounteredException = null;
 	/*
 	 * ================== Settings of table like data sources ==================
@@ -27,8 +21,7 @@ public class Header {
 	 * array structures use 0 as first position, the get and set table start methods
 	 * will ensure transition.
 	 */
-	private tableCell startCell;
-	private int selectedHeaderSize = 0;
+	private tableCell startCell = null;
 	/*
 	 * ====================== Settings of DB data sources ======================
 	 * (MSQL)
@@ -64,30 +57,23 @@ public class Header {
 		return new tableCell(this.startCell.getRowCoordinates() + 1, this.startCell.getColCoordinates() + 1);
 	}
 
-	protected void storeHeaderScan(ArrayList<HeaderEntry> header) {
-		this.selectedHeader = new ArrayList<>(header);
-	}
-
-	protected void scanStatus(boolean status) {
-		this.scanActive = status;
-	}
-
-	protected void setHeaderLength(int length) {
-		this.selectedHeaderSize=length;
-	}
-	
-	protected void storeException(Exception e)
-	{
-		this.encounteredException=e;
-	}
-	
-	public ArrayList<HeaderEntry> getScanResults() throws scanError{
-		if (encounteredException!=null) {
-			throw new ExceptionsPack.scanError("Failed to scan the data source",this.encounteredException);
+	public ArrayList<HeaderEntry> getScanResults() throws scanError {
+		if (encounteredException != null) {
+			throw new ExceptionsPack.scanError("Failed to scan the data source", this.encounteredException);
 		}
-		return this.selectedHeader;		
+		return this.selectedHeader;
 	}
-	
+
+	public Exception getEncounteredException() {
+		return this.encounteredException;
+	}
+
+	public boolean isScanActive() {
+		return this.threadStartedScan.isAlive();
+	}
+
+	private Thread threadStartedScan = null;
+
 	/**
 	 * Method scans the active data source and stores into the internal fullHeader
 	 * set, the Header details marking all columns as to be loaded
@@ -97,13 +83,9 @@ public class Header {
 	 */
 	public void scan() {
 		if (this.connection.isCSVtype()) {
-			CSVheaderScanThreadWrap headerScan = new CSVheaderScanThreadWrap(this);
-			this.scanStatus(headerScan.isScanActive());
-			headerScan.setActiveConn(this.connection);
-			headerScan.setHeaderStartCell(this.startCell);
-			
-			Thread scanThread = new Thread(headerScan);
-			scanThread.start();
+			CSVheaderScanThreadWrap headerScan = new CSVheaderScanThreadWrap(this, this.connection, this.startCell);
+			this.threadStartedScan = new Thread(headerScan);
+			this.threadStartedScan.start();
 			return;
 		}
 
@@ -120,4 +102,11 @@ public class Header {
 		}
 	}
 
+	protected void storeHeaderScan(ArrayList<HeaderEntry> header) {
+		this.selectedHeader = header;
+	}
+
+	protected void storeException(Exception e) {
+		this.encounteredException = e;
+	}
 }

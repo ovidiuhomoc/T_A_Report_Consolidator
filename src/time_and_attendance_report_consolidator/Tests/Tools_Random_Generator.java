@@ -131,27 +131,30 @@ public class Tools_Random_Generator {
 		this.csvRowArray.clear();
 
 		for (int i = 1; i <= columnsNo; i++) {
-			if (randomIntBetween(1, 3) == 3) {
-				string = addEmptyCsvCol(string, delimiter);
+			int rand;
+			if (i == columnsNo) {
+				rand = randomIntBetween(1, 2);
+			} else {
+				rand = randomIntBetween(1, 3);
+			}
 
-				if (i == columnsNo) {
-					string = string + delimiter;
-				}
+			if (rand == 3) {
+				string = addEmptyCsvCol(string);
 			} else {
 				string = addRandCsvCol(string, delimiter);
 			}
+			if (i != columnsNo) {
+				string = string + delimiter;
+			}
 		}
+
 		return string;
 	}
 
-	private String addEmptyCsvCol(String string, String delimiter) {
+	private String addEmptyCsvCol(String string) {
 		String emptyString = "";
 		this.csvRowArray.add(emptyString);
-
-		if (this.csvRowArray.size() == 1) {
-			return (emptyString);
-		}
-		return (string + delimiter + emptyString);
+		return (string + emptyString);
 	}
 
 	private String addRandCsvCol(String string, String delimiter) {
@@ -159,16 +162,10 @@ public class Tools_Random_Generator {
 		this.csvRowArray.add(randomText);
 
 		if (randomText.contains(String.valueOf('"')) || randomText.contains(delimiter)) {
-
 			randomText = randomText.replace(String.valueOf('"'), String.valueOf('"') + String.valueOf('"'));
 			randomText = String.valueOf('"') + randomText + String.valueOf('"');
-			return (string + delimiter + randomText);
 		}
-
-		if (this.csvRowArray.size() == 1) {
-			return (randomText);
-		}
-		return (string + delimiter + randomText);
+		return (string + randomText);
 	}
 
 	public String[] csvGeneratedRowToArray() {

@@ -1,75 +1,101 @@
 package time_and_attendance_report_consolidator;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CSVheaderScanThreadWrap implements Runnable {
 	private Connection activeConn;
-	private Exception encounterdException;
+	private Exception encounterdException = null;
 	private boolean exceptionFlag = false;
-	private BufferedReader csvReader;
 	private String rowContent = "";
+	private String tempContent = "";
 	private tableCell startHeaderCell;
 	private boolean headerRowFound = false;
 	private int currentRow = -1;
 	private ArrayList<HeaderEntry> selectedHeader = new ArrayList<HeaderEntry>();
-	private boolean scanActive = false;
 	private Header parentHeaderObject;
+	private String threadName = null;
 
-	public void setActiveConn(Connection activeConn) {
-		this.activeConn = activeConn;
+	public CSVheaderScanThreadWrap(Header parentHeaderObject, Connection connection, tableCell startCell) {
+		this.parentHeaderObject = parentHeaderObject;
+		setActiveConn(connection);
+		setHeaderStartCell(startCell);
 	}
 
-	public void setHeaderStartCell(tableCell startCell) {
-		this.startHeaderCell = startCell;
+	public String getThreadName() {
+		return this.threadName;
 	}
 
-	private String filePath() {
-		return this.activeConn.getFilePath();
-	}
+	@Override
+	public void run() {
+		CSVdataSource csvSource;
 
-	private void setExceptionFlag() {
-		this.exceptionFlag = true;
-	}
+		this.threadName = Thread.currentThread().getName();
 
-	private boolean isException() {
-		if (this.exceptionFlag) {
-			return true;
-		}
-		return false;
-	}
-
-	private void fileOpen() {
 		try {
-			this.csvReader = new BufferedReader(new FileReader(filePath()));
-		} catch (Exception e) {
-			this.encounterdException = e;
-			setExceptionFlag();
+			csvSource = new CSVdataSource(this.activeConn.getFilePath());
+		} catch (FileNotFoundException e) {
+			registerException(e);
+			System.out.println("The exception encountered during file open is: " + e.toString());
+			return;
 		}
+		
+		while (readAndCheckIfLineExists(csvSource) && headerRowNotReached()) {
+			if (exceptionMet()) {
+				System.out.println(
+						"The exception encountered during line read is: " + this.encounterdException.toString());
+				return;
+			}
+			if (isCurrentRowHeaderRow()) {
+				setHeaderRowFound();
+			}
+		}
+
+		if (headerRowNotReached()) {
+			this.encounterdException = new ExceptionsPack.contentNotFound(
+					"Too few rows in the file and Header starting Row was not reached until End of file.");
+			registerException(this.encounterdException);
+			System.out.println(this.encounterdException.toString());
+			return;
+		}
+
+		ContentCSVparser csvProcessor = new ContentCSVparser();
+		String[] rowSplit = csvProcessor.parseCSVrow(this.rowContent, delimiter());
+
+		if (rowSplit == null) {
+			return;
+		}
+
+		for (int i = this.startHeaderCell.getColCoordinates(); i <= rowSplit.length - 1; i++) {
+			this.selectedHeader.add(new HeaderEntry(rowSplit[i], true));
+		}
+		
+		this.parentHeaderObject.storeHeaderScan(this.selectedHeader);
+		this.parentHeaderObject.storeException(this.encounterdException);
 	}
 
-	private boolean readAndCheckIfLineExists() {
+	private boolean readAndCheckIfLineExists(CSVdataSource csvSource) {
 		try {
-			this.rowContent = this.csvReader.readLine();
-			if (this.rowContent != null) {
+			this.tempContent = csvSource.getNextLine();
+			if (this.tempContent != null) {
 				this.currentRow++;
 				return true;
-			} else {
-				return false;
 			}
+			return false;
 		} catch (Exception e) {
-			this.encounterdException = e;
-			setExceptionFlag();
+			registerException(e);
 			return false;
 		}
 	}
 
-	private boolean headerRowNotReached() {
-		if (!this.headerRowFound) {
-			return true;
-		}
-		return false;
+	private void registerException(Exception e) {
+		this.exceptionFlag = true;
+		this.encounterdException = e;
+	}
+
+	private boolean exceptionMet() {
+		return this.exceptionFlag;
 	}
 
 	private boolean isCurrentRowHeaderRow() {
@@ -80,6 +106,7 @@ public class CSVheaderScanThreadWrap implements Runnable {
 	}
 
 	private void setHeaderRowFound() {
+		this.rowContent=this.tempContent;
 		this.headerRowFound = true;
 	}
 
@@ -87,63 +114,18 @@ public class CSVheaderScanThreadWrap implements Runnable {
 		return this.activeConn.getCSVDelimiter();
 	}
 
-	public CSVheaderScanThreadWrap(Header parentHeaderObject) {
-		this.parentHeaderObject = parentHeaderObject;
-	}
-	
-	public boolean isScanActive() {
-		return this.scanActive;
-	}
-	
-	@Override
-	public void run() {
-		this.scanActive = true;
-		this.parentHeaderObject.scanStatus(this.scanActive);
-
-		this.fileOpen();
-		if (this.isException()) {
-			System.out.println("The exception encountered during file open is: " + this.encounterdException.toString());
-			this.scanActive = false;
-			return;
+	private boolean headerRowNotReached() {
+		if (!this.headerRowFound) {
+			return true;
 		}
-
-		while (this.readAndCheckIfLineExists() && this.headerRowNotReached()) {
-			if (this.isException()) {
-				System.out.println(
-						"The exception encountered during line read is: " + this.encounterdException.toString());
-				this.scanActive = false;
-				return;
-			}
-
-			if (this.isCurrentRowHeaderRow()) {
-				this.setHeaderRowFound();
-			}
-		}
-
-		ContentCSVparser csvProcessor = new ContentCSVparser();
-		String[] rowSplit = csvProcessor.parseCSVrow(this.rowContent, this.delimiter());
-
-		for (int i = this.startHeaderCell.getColCoordinates(); i <= rowSplit.length - 1; i++) {
-			this.selectedHeader.add(new HeaderEntry(rowSplit[i], true));
-		}
-
-		if (this.headerRowNotReached()) {
-			this.encounterdException = new ExceptionsPack.contentNotFound(
-					"Too few rows in the file and Header starting Row was not reached until End of file.");
-			setExceptionFlag();
-		}
-
-		if (this.isException()) {
-			System.out.println(this.encounterdException.toString());
-			this.scanActive = false;
-			return;
-		}
-
-		this.parentHeaderObject.storeHeaderScan(this.selectedHeader);
-		this.scanActive = false;
-		this.parentHeaderObject.setHeaderLength(this.selectedHeader.size());
-		this.parentHeaderObject.storeException(this.encounterdException);
-		this.parentHeaderObject.scanStatus(this.scanActive);		
+		return false;
 	}
 
+	private void setActiveConn(Connection activeConn) {
+		this.activeConn = activeConn;
+	}
+
+	private void setHeaderStartCell(tableCell startCell) {
+		this.startHeaderCell = startCell;
+	}
 }
