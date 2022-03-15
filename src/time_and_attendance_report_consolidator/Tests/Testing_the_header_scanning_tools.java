@@ -120,11 +120,11 @@ class Testing_the_header_scanning_tools {
 		System.out.println("The parsed array result is:" + Arrays.deepToString(generatedTestCSVParsedResults));
 		System.out.println("The array stored durign csv generation is:"
 				+ Arrays.deepToString(generatedTestBackStoredArrayResults));
-		/*int z = 0;
-		for (String x : Arrays.asList(generatedTestBackStoredArrayResults)) {
-			z = z + 1;
-			System.out.println("Column " + z + " contains ->" + x + "<-");
-		}*/
+		/*
+		 * int z = 0; for (String x :
+		 * Arrays.asList(generatedTestBackStoredArrayResults)) { z = z + 1;
+		 * System.out.println("Column " + z + " contains ->" + x + "<-"); }
+		 */
 
 		assertEquals(generatedTestBackStoredArrayResults.length, generatedTestCSVParsedResults.length);
 		assertEquals(30, generatedTestCSVParsedResults.length);
@@ -150,47 +150,34 @@ class Testing_the_header_scanning_tools {
 		testProfile.setActiveConn(testProfile.getConnectionByName("CSV Connection 2"));
 		assertNotEquals(header1, header2 = testProfile.getHeader());
 
-		class headerScan {
-			private ExecutorService executor = Executors.newSingleThreadExecutor();
-
-			public Future<ArrayList<HeaderEntry>> scan(Header header) {
-				return executor.submit(() -> {
-					header.scan();
-
-					while (header.isScanActive()) {
-					}
-					if (header.getEncounteredException() == null) {
-						return header.getScanResults();
-					}
-					throw header.getEncounteredException();
-				});
-			}
-		}
-
-		Future<ArrayList<HeaderEntry>> futureScanResults = new headerScan().scan(header2);
 		ArrayList<HeaderEntry> scanResults = null;
-		try {
-			scanResults = futureScanResults.get();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+		
+		header2.scan();
+		while (!header2.isScanDone()) {
 		}
-
-		assertEquals(false, header2.isScanActive());
+		try {
+			scanResults = header2.getScanResults();
+		} catch (InterruptedException | ExecutionException e1) {
+			e1.printStackTrace();
+		}
+		assertEquals(true, header2.isScanDone());
 		assertTrue(new Tools_Array_Equality_Test()
 				.headerEntryTypeUnorderedEquality(scanResults.toArray(new HeaderEntry[0]), stringsToHeaderEntryArray(
 						new String[] { "", "\"Test1", "", "\"Test 2,2\"", "Test 3,3", "", "Test 4" })));
 
+
 		header2.setHeaderStartCell(new tableCell(2, 3));
-		futureScanResults = new headerScan().scan(header2);
+		header2.scan();
+		while (!header2.isScanDone()) {
+		}
 		try {
-			scanResults = futureScanResults.get();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+			scanResults = header2.getScanResults();
+		} catch (InterruptedException | ExecutionException e1) {
+			e1.printStackTrace();
 		}
 		assertTrue(new Tools_Array_Equality_Test().headerEntryTypeUnorderedEquality(
 				scanResults.toArray(new HeaderEntry[0]),
 				stringsToHeaderEntryArray(new String[] { "\"Col 3", "", "\"\"", "", "\"Col 7\"" })));
-
 	}
 
 	private HeaderEntry[] stringsToHeaderEntryArray(String[] stringArray) {

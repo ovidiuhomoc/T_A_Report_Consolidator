@@ -1,14 +1,15 @@
 package time_and_attendance_report_consolidator;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import time_and_attendance_report_consolidator.ExceptionsPack.scanError;
 
 public class Header {
-
-	private ArrayList<HeaderEntry> selectedHeader = new ArrayList<HeaderEntry>();
 	private Connection connection;
-	private Exception encounteredException = null;
 	/*
 	 * ================== Settings of table like data sources ==================
 	 * (CSV, Excel, HTML table)
@@ -57,36 +58,29 @@ public class Header {
 		return new tableCell(this.startCell.getRowCoordinates() + 1, this.startCell.getColCoordinates() + 1);
 	}
 
-	public ArrayList<HeaderEntry> getScanResults() throws scanError {
-		if (encounteredException != null) {
-			throw new ExceptionsPack.scanError("Failed to scan the data source", this.encounteredException);
-		}
-		return this.selectedHeader;
+	public ArrayList<HeaderEntry> getScanResults() throws InterruptedException, ExecutionException{
+		return this.futureScanResults.get();
 	}
 
-	public Exception getEncounteredException() {
-		return this.encounteredException;
+	public boolean isScanDone() {
+		return this.futureScanResults.isDone();
 	}
 
-	public boolean isScanActive() {
-		return this.threadStartedScan.isAlive();
-	}
-
-	private Thread threadStartedScan = null;
+	Future<ArrayList<HeaderEntry>> futureScanResults;
 
 	/**
 	 * Method scans the active data source and stores into the internal fullHeader
 	 * set, the Header details marking all columns as to be loaded
 	 * 
+	 * @throws Exception
+	 * 
 	 * @throws contentNotFound
 	 * @throws scanError
 	 */
-	public void scan() {
+	public void scan(){
 		if (this.connection.isCSVtype()) {
-			CSVheaderScanThreadWrap headerScan = new CSVheaderScanThreadWrap(this, this.connection, this.startCell);
-			this.threadStartedScan = new Thread(headerScan);
-			this.threadStartedScan.start();
-			return;
+			CSVHeaderScanner headerScanner = new CSVHeaderScanner(this.connection, this.startCell);
+			this.futureScanResults = new innerHeaderScan().scan(headerScanner);
 		}
 
 		if (connection.getType().equals("Excel")) {
@@ -102,11 +96,14 @@ public class Header {
 		}
 	}
 
-	protected void storeHeaderScan(ArrayList<HeaderEntry> header) {
-		this.selectedHeader = header;
-	}
+	class innerHeaderScan {
+		private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	protected void storeException(Exception e) {
-		this.encounteredException = e;
+		public Future<ArrayList<HeaderEntry>> scan(CSVHeaderScanner headerScanner) {
+			return executor.submit(() -> {
+				ArrayList<HeaderEntry> scanResults = headerScanner.scanForHeader();
+				return scanResults;
+			});
+		}
 	}
 }
