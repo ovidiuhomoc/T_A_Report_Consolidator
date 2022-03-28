@@ -6,10 +6,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import TA_Report_Tool.Data.HeaderMapping;
+import TA_Report_Tool.Data.HeaderMappingField;
+import time_and_attendance_report_consolidator.ExceptionsPack.connectionNotInitialized;
+import time_and_attendance_report_consolidator.ExceptionsPack.contentNotFound;
 import time_and_attendance_report_consolidator.ExceptionsPack.scanError;
 
 public class Header {
-	private Connection connection;
+	private Connection connection = null;
 	/*
 	 * ================== Settings of table like data sources ==================
 	 * (CSV, Excel, HTML table)
@@ -29,28 +33,34 @@ public class Header {
 	 * 
 	 * To be filled in
 	 */
+	private HeaderMapping headerMapping = null;
 
 	/**
 	 * Constructor of Header class
 	 * 
-	 * @param activeConn is a Connection type object that is passed so the methods
-	 *                   to connect to data source and extract header.
+	 * @param activeConn    is a Connection type object that is passed so the
+	 *                      methods to connect to data source and extract header.
+	 * @param headerMapping represents an ArrayList of HeaderMappingField used to
+	 *                      store the formatting of each column for correct parsing
 	 */
-	public Header(Connection activeConn) {
+	public Header(Connection activeConn, HeaderMapping headerMapping) {
 		this.connection = activeConn;
 		this.startCell = new tableCell(0, 0);
+		this.headerMapping = headerMapping;
 	}
 
 	/**
 	 * Setter method used to indicate the beginning of the header for table like
 	 * data sources
 	 * 
+	 * <br>
+	 * The conversion from user logic (first cell at 1,1) to Java logic (first cell
+	 * at 0,0) is done inside
+	 * 
 	 * @param startRow a variable of int type indicating the starting row
 	 * @param startCol a variable of int type indicating the starting column
 	 */
 	public void setHeaderStartCell(tableCell startCell) {
-		// Conversion from user logic (first cell at 1,1) to Java logic (first cell at
-		// 0,0)
 		this.startCell = new tableCell(startCell.getRowCoordinates() - 1, startCell.getColCoordinates() - 1);
 	}
 
@@ -58,29 +68,64 @@ public class Header {
 		return new tableCell(this.startCell.getRowCoordinates() + 1, this.startCell.getColCoordinates() + 1);
 	}
 
-	public ArrayList<HeaderEntry> getScanResults() throws InterruptedException, ExecutionException{
-		return this.futureScanResults.get();
+	public ArrayList<HeaderEntry> getColumns()
+			throws InterruptedException, ExecutionException, connectionNotInitialized {
+		if (this.headerScannedAtLeastOnce == false) {
+			this.scan();
+		}
+
+		if (this.freshScan) {
+			storeScanResults();
+			return this.headerColumns;
+		}
+		return this.headerColumns;
 	}
 
 	public boolean isScanDone() {
 		return this.futureScanResults.isDone();
 	}
 
+	private void storeScanResults() throws InterruptedException, ExecutionException {
+		this.headerColumns = this.futureScanResults.get();
+		this.freshScan = false;
+	}
+
+	private boolean freshScan = false;
+	private boolean headerScannedAtLeastOnce = false;
+	private ArrayList<HeaderEntry> headerColumns = new ArrayList<HeaderEntry>();
 	Future<ArrayList<HeaderEntry>> futureScanResults;
+	private DataSource mockSource = null;
+	private boolean useAlternateMockDataSource = false;
 
 	/**
 	 * Method scans the active data source and stores into the internal fullHeader
 	 * set, the Header details marking all columns as to be loaded
+	 * 
+	 * @throws connectionNotInitialized
 	 * 
 	 * @throws Exception
 	 * 
 	 * @throws contentNotFound
 	 * @throws scanError
 	 */
-	public void scan(){
+	public void scan() throws connectionNotInitialized {
+		if (this.connection.equals(null)) {
+			throw new ExceptionsPack.connectionNotInitialized("The connection it was not initialized and it is null");
+		}
+
 		if (this.connection.isCSVtype()) {
-			CSVHeaderScanner headerScanner = new CSVHeaderScanner(this.connection, this.startCell);
-			this.futureScanResults = new innerHeaderScan().scan(headerScanner);
+			CSVHeaderScanner headerScanner;
+			if (!this.useAlternateMockDataSource) {
+				headerScanner = new CSVHeaderScanner(this.connection, this.startCell);
+			} else {
+				this.resetAlternateMockDataSourceUse();
+				headerScanner = new CSVHeaderScanner(this.connection, this.startCell, this.mockSource);
+			}
+			this.futureScanResults = new InnerCSVHeaderScan().scan(headerScanner, this.headerMapping);
+			this.freshScan = true;
+			this.headerScannedAtLeastOnce = true;
+
+			return;
 		}
 
 		if (connection.getType().equals("Excel")) {
@@ -96,14 +141,41 @@ public class Header {
 		}
 	}
 
-	class innerHeaderScan {
+	public void scanMock(DataSource mockSource) throws connectionNotInitialized {
+		this.useAlternateMockDataSource = true;
+		this.mockSource = mockSource;
+		this.scan();
+	}
+
+	private void resetAlternateMockDataSourceUse() {
+		this.useAlternateMockDataSource = false;
+	}
+
+	class InnerCSVHeaderScan {
 		private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-		public Future<ArrayList<HeaderEntry>> scan(CSVHeaderScanner headerScanner) {
+		public Future<ArrayList<HeaderEntry>> scan(CSVHeaderScanner headerScanner, HeaderMapping headerMapping) {
 			return executor.submit(() -> {
-				ArrayList<HeaderEntry> scanResults = headerScanner.scanForHeader();
+				ArrayList<HeaderEntry> scanResults = headerScanner.scanForHeader(headerMapping);
 				return scanResults;
 			});
+		}
+	}
+
+	public void setMappingTypeOfColumnWithName(String name, HeaderMappingField type) throws connectionNotInitialized, InterruptedException, ExecutionException {
+		if (this.headerScannedAtLeastOnce == false) {
+			this.scan();
+		}
+
+		if (this.freshScan) {
+			storeScanResults();
+		}
+
+		for (HeaderEntry x : this.headerColumns) {
+			if (x.getName().equals(name)) {
+				x.setHeaderMappingField(type);
+				return;
+			}
 		}
 	}
 }

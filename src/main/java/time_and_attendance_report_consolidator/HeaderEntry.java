@@ -1,4 +1,7 @@
+
 package time_and_attendance_report_consolidator;
+
+import TA_Report_Tool.Data.HeaderMappingField;
 
 /**
  * The class is used to encapsulate the pair (String) Column Name & (Boolean) To
@@ -12,10 +15,12 @@ package time_and_attendance_report_consolidator;
 public class HeaderEntry {
 	private String colName;
 	private boolean isLoaded;
+	private HeaderMappingField columnType;
 
-	public HeaderEntry(String columnName, boolean isLoaded) {
+	public HeaderEntry(String columnName, boolean isLoaded, HeaderMappingField type) {
 		this.colName = columnName;
 		this.isLoaded = isLoaded;
+		this.columnType = type;
 	}
 
 	/**
@@ -60,5 +65,13 @@ public class HeaderEntry {
 	 */
 	public void setLoadStatus(boolean status) {
 		this.isLoaded = status;
+	}
+
+	public HeaderMappingField getHeaderMappingField() {
+		return this.columnType;
+	}
+
+	public void setHeaderMappingField(HeaderMappingField type) {
+		this.columnType = type;
 	}
 }

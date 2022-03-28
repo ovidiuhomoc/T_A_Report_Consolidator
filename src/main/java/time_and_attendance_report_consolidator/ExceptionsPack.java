@@ -25,4 +25,16 @@ public class ExceptionsPack {
 			super(msg);
 		}
 	}
+	
+	public static class connectionNotInitialized extends Exception {
+		public connectionNotInitialized(String msg) {
+			super(msg);
+		}
+	}
+	
+	public static class MappingFieldDoesNotExist extends Exception {
+		public MappingFieldDoesNotExist(String msg) {
+			super(msg);
+		}
+	}
 }

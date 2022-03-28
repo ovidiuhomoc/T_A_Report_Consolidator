@@ -1,10 +1,11 @@
 package time_and_attendance_report_consolidator;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import TA_Report_Tool.Data.HeaderMapping;
+import time_and_attendance_report_consolidator.ExceptionsPack.connectionNotInitialized;
 import time_and_attendance_report_consolidator.ExceptionsPack.nullNameConnection;
 import time_and_attendance_report_consolidator.ExceptionsPack.profileDoesNotExist;
 
@@ -14,6 +15,7 @@ public class Profile {
 	private static Set<Profile> all = new HashSet<Profile>();// later to be considered TreeSet or LinkedHashSet for
 																// keeping the Profiles in their addition order
 	private static Profile active;
+	private HeaderMapping headerMapping = null;
 
 	/**
 	 * Constructor of class Profile. Creates a new object of type Profile using as
@@ -28,6 +30,8 @@ public class Profile {
 		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
+		
+		this.headerMapping = new HeaderMapping();
 	}
 
 	/**
@@ -41,6 +45,8 @@ public class Profile {
 		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
+		
+		this.headerMapping = new HeaderMapping();
 	}
 
 	public static void reset() {
@@ -456,10 +462,17 @@ public class Profile {
 	private Header header = null;
 
 	private void initializeHeader() {
-		this.header = new Header(this.getActiveConn());
+		this.header = new Header(this.getActiveConn(),this.headerMapping);
 	}
 
-	public Header activeHeader() {
+	public Header activeHeader() throws connectionNotInitialized {
+		if (this.getActiveConn() == null) {
+				throw new ExceptionsPack.connectionNotInitialized("The connection it was not initialized and it is null");
+		}
 		return this.header;
+	}
+	
+	public HeaderMapping getHeaderMapping() {
+		return this.headerMapping;		
 	}
 }

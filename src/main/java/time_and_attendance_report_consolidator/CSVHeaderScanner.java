@@ -3,10 +3,15 @@ package time_and_attendance_report_consolidator;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
+import TA_Report_Tool.Data.HeaderMapping;
+import TA_Report_Tool.Data.mappingType;
+
 public class CSVHeaderScanner {
 
 	private ArrayList<HeaderEntry> selectedHeader = new ArrayList<HeaderEntry>();
-	private CSVdataSource csvSource;
+	private DataSource csvSource;
+	private DataSource mockCSVSource = null;
+	private boolean mockFlag = false;
 	private Connection activeConn;
 	private tableCell startHeaderCell;
 	private String rowTempContainer = "";
@@ -19,16 +24,27 @@ public class CSVHeaderScanner {
 		setHeaderStartCell(startCell);
 	}
 
-	public ArrayList<HeaderEntry> scanForHeader() throws Exception {
-		try {
-			csvSource = new CSVdataSource(this.activeConn.getFilePath());
-		} catch (FileNotFoundException e) {
-			System.out.println("The exception encountered during file open is: " + e.toString());
-			throw new Exception(e);
+	public CSVHeaderScanner(Connection connection, tableCell startCell, DataSource mockSource) {
+		setActiveConn(connection);
+		setHeaderStartCell(startCell);
+		this.mockFlag = true;
+		this.mockCSVSource = mockSource;
+	}
+
+	public ArrayList<HeaderEntry> scanForHeader(HeaderMapping headerMapping) throws Exception {
+		if (mockFlag == false) {
+			try {
+				this.csvSource = new CSVdataSource(this.activeConn.getFilePath());
+			} catch (FileNotFoundException e) {
+				System.out.println("The exception encountered during file open is: " + e.toString());
+				throw new Exception(e);
+			}
+		} else {
+			this.csvSource = this.mockCSVSource;
 		}
 
 		try {
-			while (readAndCheckIfLineExists(csvSource) && headerRowNotReached()) {
+			while (readAndCheckIfLineExists(this.csvSource) && headerRowNotReached()) {
 				if (isCurrentRowHeaderRow()) {
 					setHeaderRowFound();
 				}
@@ -51,7 +67,7 @@ public class CSVHeaderScanner {
 		}
 
 		for (int i = this.startHeaderCell.getColCoordinates(); i < rowSplit.length; i++) {
-			this.selectedHeader.add(new HeaderEntry(rowSplit[i], true));
+			this.selectedHeader.add(new HeaderEntry(rowSplit[i], true,headerMapping.getHeaderMappingFieldByType(mappingType.NotSet)));
 		}
 
 		return this.selectedHeader;
@@ -73,7 +89,7 @@ public class CSVHeaderScanner {
 		this.headerRowFound = true;
 	}
 
-	private boolean readAndCheckIfLineExists(CSVdataSource csvSource) throws Exception {
+	private boolean readAndCheckIfLineExists(DataSource csvSource) throws Exception {
 		try {
 			this.rowTempContainer = csvSource.getNextLine();
 			if (this.rowTempContainer != null) {

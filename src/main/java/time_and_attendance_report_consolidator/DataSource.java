@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface DataSource {
 	
-	String getNextLine() throws IOException;
+	public String getNextLine() throws IOException;
 
 }
