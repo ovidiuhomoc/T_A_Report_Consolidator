@@ -10,11 +10,11 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
+import TA_Report_Tool.Data.HeaderEntry;
 import TA_Report_Tool.Data.HeaderMappingField;
 import TA_Report_Tool.Data.mappingType;
-import time_and_attendance_report_consolidator.ContentCSVparser;
-import time_and_attendance_report_consolidator.HeaderEntry;
-import time_and_attendance_report_consolidator.tableCell;
+import TA_Report_Tool.Data.tableCell;
+import TA_Report_Tool.Processors.ContentCSVparser;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class Testing_the_Header_scanning_tools {

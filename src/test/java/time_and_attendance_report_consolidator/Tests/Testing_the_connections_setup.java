@@ -12,10 +12,10 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
-import time_and_attendance_report_consolidator.Connection;
-import time_and_attendance_report_consolidator.ExceptionsPack;
-import time_and_attendance_report_consolidator.ExceptionsPack.nullNameConnection;
-import time_and_attendance_report_consolidator.Profile;
+import TA_Report_Tool.MainApp.Connection;
+import TA_Report_Tool.MainApp.ExceptionsPack;
+import TA_Report_Tool.MainApp.Profile;
+import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class Testing_the_connections_setup {

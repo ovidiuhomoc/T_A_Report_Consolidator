@@ -16,17 +16,17 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
+import TA_Report_Tool.Data.CSVdataSource;
+import TA_Report_Tool.Data.HeaderEntry;
 import TA_Report_Tool.Data.HeaderMappingField;
 import TA_Report_Tool.Data.mappingType;
-import time_and_attendance_report_consolidator.CSVdataSource;
-import time_and_attendance_report_consolidator.ExceptionsPack;
-import time_and_attendance_report_consolidator.ExceptionsPack.MappingFieldDoesNotExist;
-import time_and_attendance_report_consolidator.ExceptionsPack.connectionNotInitialized;
-import time_and_attendance_report_consolidator.ExceptionsPack.nullNameConnection;
-import time_and_attendance_report_consolidator.Header;
-import time_and_attendance_report_consolidator.HeaderEntry;
-import time_and_attendance_report_consolidator.Profile;
-import time_and_attendance_report_consolidator.tableCell;
+import TA_Report_Tool.Data.tableCell;
+import TA_Report_Tool.MainApp.ExceptionsPack;
+import TA_Report_Tool.MainApp.Header;
+import TA_Report_Tool.MainApp.Profile;
+import TA_Report_Tool.MainApp.ExceptionsPack.MappingFieldDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
+import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class Testing_the_Header_scanning_in_profile {

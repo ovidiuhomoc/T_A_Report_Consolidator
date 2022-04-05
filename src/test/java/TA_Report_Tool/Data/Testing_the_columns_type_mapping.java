@@ -10,9 +10,9 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
-import time_and_attendance_report_consolidator.ExceptionsPack;
-import time_and_attendance_report_consolidator.ExceptionsPack.MappingFieldDoesNotExist;
-import time_and_attendance_report_consolidator.Profile;
+import TA_Report_Tool.MainApp.ExceptionsPack;
+import TA_Report_Tool.MainApp.Profile;
+import TA_Report_Tool.MainApp.ExceptionsPack.MappingFieldDoesNotExist;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class Testing_the_columns_type_mapping {

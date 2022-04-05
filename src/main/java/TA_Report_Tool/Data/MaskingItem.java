@@ -26,6 +26,9 @@ public enum MaskingItem {
 	Number,
 	AnyString,
 	SingleCharacter,
+	SepSlash,// /
+	SepBackSlah, // \
+	SepVerticalLine,// |
 	NotSet;
 
 }

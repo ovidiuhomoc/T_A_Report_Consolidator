@@ -29,6 +29,13 @@ public class MaskTemplate {
 		if (NotSet()) {
 			reset();
 		}
+		for (char x : string.toCharArray()) {
+			addSepSubMethod(String.valueOf(x));
+		}
+		return this;
+	}
+
+	public void addSepSubMethod(String string) {
 		switch (string) {
 		case ":":
 			this.maskTemplate.add(MaskingItem.SepColons);
@@ -51,8 +58,16 @@ public class MaskTemplate {
 		case "-":
 			this.maskTemplate.add(MaskingItem.SepMinus);
 			break;
+		case "/":
+			this.maskTemplate.add(MaskingItem.SepSlash);
+			break;
+		case "\\":
+			this.maskTemplate.add(MaskingItem.SepBackSlah);
+			break;
+		case "|":
+			this.maskTemplate.add(MaskingItem.SepVerticalLine);
+			break;
 		}
-		return this;
 	}
 
 	public MaskTemplate addMMonth() {
@@ -135,18 +150,36 @@ public class MaskTemplate {
 		return this;
 	}
 
-	public MaskTemplate add12h() {
+	public MaskTemplate markAMPMTime() {
 		if (NotSet()) {
 			reset();
 		}
+
+		if (this.maskTemplate.contains(MaskingItem.MilitaryHour)) {
+			replaceAllOccurrences(MaskingItem.MilitaryHour, MaskingItem.AMorPMMark);
+			return this;
+		}
+
 		this.maskTemplate.add(MaskingItem.AMorPMMark);
 		return this;
 	}
 
-	public MaskTemplate add24h() {
+	private void replaceAllOccurrences(MaskingItem itemToBeReplaced, MaskingItem itemToReplaceWith) {
+		while (this.maskTemplate.contains(itemToBeReplaced)) {
+			this.maskTemplate.set(this.maskTemplate.indexOf(itemToBeReplaced), itemToReplaceWith);
+		}
+	}
+
+	public MaskTemplate mark24hTime() {
 		if (NotSet()) {
 			reset();
 		}
+		
+		if (this.maskTemplate.contains(MaskingItem.AMorPMMark)) {
+			replaceAllOccurrences(MaskingItem.AMorPMMark, MaskingItem.MilitaryHour);
+			return this;
+		}
+		
 		this.maskTemplate.add(MaskingItem.MilitaryHour);
 		return this;
 	}
@@ -155,6 +188,7 @@ public class MaskTemplate {
 		if (NotSet()) {
 			reset();
 		}
+				
 		this.maskTemplate.add(MaskingItem.AnyString);
 		return this;
 	}
@@ -203,5 +237,9 @@ public class MaskTemplate {
 			return false;
 		}
 		return true;
+	}
+
+	public ArrayList<MaskingItem> toArrayList() {
+		return this.maskTemplate;
 	}
 }

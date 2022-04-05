@@ -2,17 +2,17 @@ package TA_Report_Tool.Data;
 
 import java.util.ArrayList;
 
-import time_and_attendance_report_consolidator.ExceptionsPack;
-import time_and_attendance_report_consolidator.ExceptionsPack.MappingFieldDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack;
+import TA_Report_Tool.MainApp.ExceptionsPack.MappingFieldDoesNotExist;
 
 public class HeaderMapping {
 	private ArrayList<HeaderMappingField> listOfMappings = new ArrayList<HeaderMappingField>();
 
 	public HeaderMapping() {
 		this.listOfMappings.add(new HeaderMappingField("Date1",
-				new MaskTemplate().addDDay().addSep(":").addMMonth().addSep(":").addYYYYear(), mappingType.Date));
+				new MaskTemplate().addDDay().addSep(".").addMMonth().addSep(".").addYYYYear(), mappingType.Date));
 		this.listOfMappings.add(new HeaderMappingField("Time1",
-				new MaskTemplate().addhour().addSep(":").addminute().addSep(":").addsecond().addSep(" ").add12h(),
+				new MaskTemplate().addhhour().addSep(":").addmminute().addSep(":").addsecond().addSep(" ").markAMPMTime(),
 				mappingType.Time));
 		this.listOfMappings.add(new HeaderMappingField("Employee Unique ID", new MaskTemplate().addAnyString(),
 				mappingType.EmployeeUniqueId));

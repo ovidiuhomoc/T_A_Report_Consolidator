@@ -2,8 +2,8 @@ package time_and_attendance_report_consolidator.Tests;
 
 import java.util.Arrays;
 
-import time_and_attendance_report_consolidator.HeaderEntry;
-import time_and_attendance_report_consolidator.Profile;
+import TA_Report_Tool.Data.HeaderEntry;
+import TA_Report_Tool.MainApp.Profile;
 
 public class Tools_Array_Equality_Test {
 
