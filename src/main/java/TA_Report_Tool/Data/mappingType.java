@@ -1,6 +1,6 @@
 package TA_Report_Tool.Data;
 
-public enum mappingType {
+public enum MappingType {
 	Date,
 	Time,
 	DateAndTime,

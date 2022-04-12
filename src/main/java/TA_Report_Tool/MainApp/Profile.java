@@ -3,9 +3,16 @@ package TA_Report_Tool.MainApp;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import TA_Report_Tool.Data.HeaderMapping;
+import TA_Report_Tool.Data.ConnType;
+import TA_Report_Tool.Data.Connection;
+import TA_Report_Tool.Data.MappingCollection;
+import TA_Report_Tool.Data.TableData;
+import TA_Report_Tool.Data.TableHeader;
 import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
+import TA_Report_Tool.MainApp.ExceptionsPack.dateOrTimeMissing;
+import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 import TA_Report_Tool.MainApp.ExceptionsPack.profileDoesNotExist;
 
@@ -15,40 +22,43 @@ public class Profile {
 	private static Set<Profile> all = new HashSet<Profile>();// later to be considered TreeSet or LinkedHashSet for
 																// keeping the Profiles in their addition order
 	private static Profile active;
-	private HeaderMapping headerMapping = null;
 
 	/**
 	 * Constructor of class Profile. Creates a new object of type Profile using as
 	 * parameter a <String>String</String> representing name of profile.
 	 * 
 	 * @param name a String variable containing the profile name
-	 * @throws SeparatorMoreThanOneCharachter 
+	 * @throws nullArgument
+	 * @throws SeparatorMoreThanOneCharachter
 	 */
-	public Profile(String name) {
+	public Profile(String name) throws nullArgument {
 		this.name = name;
 		Profile.all.add(this);
 
 		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
-		
-		this.headerMapping = new HeaderMapping();
+
+		this.mappingCollection = new MappingCollection();
 	}
 
 	/**
 	 * Constructor of class Profile. Creates a new object of type Profile using as
 	 * name parameter a default "Profile " + count.
-	 * @throws SeparatorMoreThanOneCharachter 
+	 * 
+	 * @throws nullArgument
+	 * 
+	 * @throws SeparatorMoreThanOneCharachter
 	 */
-	public Profile() {
+	public Profile() throws nullArgument {
 		this.name = "Profile " + (Profile.noOfProfiles() + 1);
 		Profile.all.add(this);
 
 		if (Profile.noOfProfiles() == 1) {
 			Profile.active = this;
 		}
-		
-		this.headerMapping = new HeaderMapping();
+
+		this.mappingCollection = new MappingCollection();
 	}
 
 	public static void reset() {
@@ -324,8 +334,14 @@ public class Profile {
 	 *                  extension)
 	 * @param delimiter The delimiter that should be used for CSV parsing.
 	 * @throws nullNameConnection
+	 * @throws nullArgument
+	 * @throws dateOrTimeMissing
+	 * @throws connectionNotInitialized
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
-	public void setCSVConn(String connName, String file, String delimiter) throws nullNameConnection {
+	public void initializeCSVConn(String connName, String file, String delimiter) throws nullNameConnection,
+			InterruptedException, ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument {
 		Connection newConn;
 
 		if (connName == null) {
@@ -338,11 +354,11 @@ public class Profile {
 			newConn = new Connection();
 		}
 
-		newConn.setConnection(connName, "CSV", file);
+		newConn.setConnection(connName, ConnType.CSV, file);
 		newConn.setCSVDelimiter(delimiter);
 		if (this.connections.size() == 0) {
 			this.activeConn = newConn;
-			initializeHeader();
+			initializeDataStructures();
 		}
 		this.connections.add(newConn);
 	}
@@ -362,26 +378,15 @@ public class Profile {
 	 * @param file     The full path towards the file (including file name and
 	 *                 extension)
 	 * @throws nullNameConnection
+	 * @throws nullArgument
+	 * @throws dateOrTimeMissing
+	 * @throws connectionNotInitialized
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
-	public void setCSVConn(String connName, String file) throws nullNameConnection {
-		Connection newConn;
-
-		if (connName == null) {
-			throw new ExceptionsPack.nullNameConnection("Connection can't be set with a null name");
-		}
-
-		if (this.doesConnectionExist(connName)) {
-			newConn = this.getConnectionByName(connName);
-		} else {
-			newConn = new Connection();
-		}
-
-		newConn.setConnection(connName, "CSV", file);
-		if (this.connections.size() == 0) {
-			this.activeConn = newConn;
-			initializeHeader();
-		}
-		this.connections.add(newConn);
+	public void initializeCSVConn(String connName, String file) throws nullNameConnection, InterruptedException,
+			ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument {
+		this.initializeCSVConn(connName, file, ",");
 	}
 
 	/**
@@ -444,9 +449,10 @@ public class Profile {
 		return this.activeConn;
 	}
 
-	public void setActiveConn(Connection conn) {
+	public void setActiveConn(Connection conn)
+			throws InterruptedException, ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument {
 		this.activeConn = conn;
-		initializeHeader();
+		initializeDataStructures();
 	}
 
 	// SQL, Excel, HTML connections to be still setup
@@ -461,20 +467,40 @@ public class Profile {
 	 * by user.
 	 */
 
-	private Header header = null;
+	private TableHeader tableHeader = null;
+	private MappingCollection mappingCollection = null;
+	private TableData tableData;
 
-	private void initializeHeader() {
-		this.header = new Header(this.getActiveConn(),this.headerMapping);
+	private void initializeDataStructures()
+			throws InterruptedException, ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument {
+		this.tableData = new TableData();
+		this.tableHeader = new TableHeader(this.getActiveConn(),this.tableData);
 	}
 
-	public Header activeHeader() throws connectionNotInitialized {
+	public TableHeader getTableHeader() throws connectionNotInitialized {
 		if (this.getActiveConn() == null) {
-				throw new ExceptionsPack.connectionNotInitialized("The connection it was not initialized and it is null");
+			throw new ExceptionsPack.connectionNotInitialized("The connection it was not initialized and it is null");
 		}
-		return this.header;
+		return this.tableHeader;
 	}
-	
-	public HeaderMapping getHeaderMapping() {
-		return this.headerMapping;		
+
+	public MappingCollection getMappingCollection() {
+		return this.mappingCollection;
 	}
+
+	/*
+	 * ========================== Section 6 ===========================
+	 * ======================== Data Storage ==========================
+	 *
+	 * The data after the header is read, parsed and stored within this structure
+	 * for later usage. Only the columns marked as to be loaded will be parsed and
+	 * read.
+	 */
+
+	// functie de scan continut
+	// la momentul scanarii, se reface complet obiectul de stocare
+
+	// obiectul de stocare contine un ArrayList cu obiecte coloana + numar de
+	// randuri totale (fara header)
+
 }

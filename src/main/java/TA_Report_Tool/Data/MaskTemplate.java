@@ -35,7 +35,7 @@ public class MaskTemplate {
 		return this;
 	}
 
-	public void addSepSubMethod(String string) {
+	private void addSepSubMethod(String string) {
 		switch (string) {
 		case ":":
 			this.maskTemplate.add(MaskingItem.SepColons);
@@ -216,6 +216,14 @@ public class MaskTemplate {
 		this.maskTemplate.add(MaskingItem.SingleCharacter);
 		return this;
 	}
+	
+	public MaskTemplate addSingleSpecialCh() {
+		if (NotSet()) {
+			reset();
+		}
+		this.maskTemplate.add(MaskingItem.SingleSpecialCh);
+		return this;
+	}
 
 	private boolean NotSet() {
 		if (this.maskTemplate.get(0) == MaskingItem.NotSet) {
@@ -226,10 +234,6 @@ public class MaskTemplate {
 
 	private void reset() {
 		this.maskTemplate.clear();
-	}
-
-	public MaskTemplate getObj() {
-		return this;
 	}
 
 	public boolean isSet() {

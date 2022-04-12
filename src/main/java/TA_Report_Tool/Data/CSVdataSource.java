@@ -15,12 +15,6 @@ public class CSVdataSource implements DataSource {
 	}
 
 	public CSVdataSource(String filePath) throws FileNotFoundException {
-
-		try {
-			this.csvReader = new BufferedReader(new FileReader(filePath));
-		} catch (FileNotFoundException e) {
-			throw new FileNotFoundException(e.getLocalizedMessage());
-		}
+		this.csvReader = new BufferedReader(new FileReader(filePath));
 	}
-
 }

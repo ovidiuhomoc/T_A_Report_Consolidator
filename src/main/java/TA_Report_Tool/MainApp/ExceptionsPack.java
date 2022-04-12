@@ -2,8 +2,44 @@ package TA_Report_Tool.MainApp;
 
 public class ExceptionsPack {
 
-	public static class ParsingFailedDueToNullMappingMask extends Exception {
-		public ParsingFailedDueToNullMappingMask(String msg) {
+	public static class tableDataNotInitialized extends Exception {
+		public tableDataNotInitialized(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class nullArgument extends Exception {
+		public nullArgument(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class dateOrTimeMissing extends Exception {
+		public dateOrTimeMissing(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class nullDataReceivedForParsing extends Exception {
+		public nullDataReceivedForParsing(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class tableLengthAndDataLengthNotMatching extends Exception {
+		public tableLengthAndDataLengthNotMatching(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class rowParameterNotHigherThanZero extends Exception {
+		public rowParameterNotHigherThanZero(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class parsingFailedDueToNullMappingMask extends Exception {
+		public parsingFailedDueToNullMappingMask(String msg) {
 			super(msg);
 		}
 	}
@@ -19,45 +55,45 @@ public class ExceptionsPack {
 			super(msg, cause);
 		}
 	}
-	
+
 	public static class profileDoesNotExist extends Exception {
 		public profileDoesNotExist(String msg) {
 			super(msg);
 		}
 	}
-	
+
 	public static class nullNameConnection extends Exception {
 		public nullNameConnection(String msg) {
 			super(msg);
 		}
 	}
-	
+
 	public static class connectionNotInitialized extends Exception {
 		public connectionNotInitialized(String msg) {
 			super(msg);
 		}
 	}
-	
-	public static class MappingFieldDoesNotExist extends Exception {
-		public MappingFieldDoesNotExist(String msg) {
+
+	public static class mappingUnitDoesNotExist extends Exception {
+		public mappingUnitDoesNotExist(String msg) {
 			super(msg);
 		}
 	}
-	
-	public static class SearchedHeaderColumnIsNull extends Exception {
-		public SearchedHeaderColumnIsNull(String msg) {
+
+	public static class nullColumnPropertiesPassed extends Exception {
+		public nullColumnPropertiesPassed(String msg) {
 			super(msg);
 		}
 	}
-	
-	public static class HeaderColumnDoesNotExist extends Exception {
-		public HeaderColumnDoesNotExist(String msg) {
+
+	public static class columnPropertiesDoesNotExist extends Exception {
+		public columnPropertiesDoesNotExist(String msg) {
 			super(msg);
 		}
 	}
-	
-	public static class CantBeParsedWithCurrentMappingMask extends Exception {
-		public CantBeParsedWithCurrentMappingMask(String msg) {
+
+	public static class cantBeParsedWithCurrentMappingMask extends Exception {
+		public cantBeParsedWithCurrentMappingMask(String msg) {
 			super(msg);
 		}
 	}
