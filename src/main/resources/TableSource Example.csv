@@ -1,10 +1,10 @@
 table col 1,table col 2,table col 3,table col 4,table col 5,table col 6,table col 7,table col 8,table col 9,table col 10,table col 11,table col 12
 ,,,,,,,,,,,
 ,Event ID,Event Date,Event Time,Signaling Device of the Event,User ID,User First Name,User Last Name,User Middle Name,Event,Custom defined field 1,Custom defined field 2
-,1,02 – 03 – 2022,09:00:00 AM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
-,2,02 – 03 – 2022,05:00:00 PM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
-,3,03 – 03 – 2022,09:00:00 AM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
-,4,03 – 03 – 2022,09:00:00 AM,Turnstile 1 Reader,1,Cip,H,the Jedi Master,Access Granted,Dep. SW Engineering,
-,5,03 – 03 – 2022,01:00:00 PM,IT Room Door,543,Ovidiu,H,the newbie,Anti-PassBack Violation,Dep. Security,
-,6,03 – 03 – 2022,05:00:00 PM,Turnstile 2 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
-,7,03 – 03 – 2022,05:00:00 PM,Turnstile 3 Reader,1,Cip,H,the Jedi Master,Access Granted,Dep. SW Engineering,
+,1,02.03.2022,09:00:00 AM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
+,2,02.03.2022,05:00:00 PM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
+,3,03.03.2022,09:00:00 AM,Turnstile 1 Reader,543,Ovidiu,H,the newbie,Access Granted,Dep. Security,
+,4,03.03.2022,09:00:00 AM,Turnstile 1 Reader,1,Cip,H,the Jedi Master,Access Granted,Dep. SW Engineering,
+,5,03.03.2022,01:00:00 PM,IT Room Door,543,Ovidiu,H,the newbie,Anti-PassBack Violation,Dep. Security,
+,6,03.03.2022,05:00:00 PM,Turnstile 2 Reader,543,Ovidiu,H,the newbie,Access Denied,Dep. Security,
+,7,03.03.2022,05:00:00 PM,Turnstile 3 Reader,1,Cip,H,the Jedi Master,Access Granted,Dep. SW Engineering,

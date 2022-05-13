@@ -3,7 +3,7 @@ package TA_Report_Tool.Data;
 import java.util.ArrayList;
 
 import TA_Report_Tool.MainApp.ExceptionsPack;
-import TA_Report_Tool.MainApp.ExceptionsPack.mappingUnitDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 
 public class MappingCollection {
@@ -34,13 +34,13 @@ public class MappingCollection {
 		return false;
 	}
 
-	public MappingUnit getMappingUnitdByName(String name) throws mappingUnitDoesNotExist {
+	public MappingUnit getMappingUnitdByName(String name) throws searchCantFindMappingUnitInCollection {
 		for (MappingUnit mappingUnit : this.listOfMappings) {
 			if (mappingUnit.getName().equals(name)) {
 				return mappingUnit;
 			}
 		}
-		throw new ExceptionsPack.mappingUnitDoesNotExist("No mapping field with name " + name + "exists");
+		throw new ExceptionsPack.searchCantFindMappingUnitInCollection("No mapping field with name " + name + "exists");
 	}
 
 	public void addMappingUnit(String name, MaskTemplate mask, MappingType employeefullname) throws nullArgument {
@@ -51,13 +51,13 @@ public class MappingCollection {
 		this.listOfMappings.add(mappingField);
 	}
 	
-	public MappingUnit getMappingUnitdByType(MappingType type) throws mappingUnitDoesNotExist {
+	public MappingUnit getMappingUnitdByType(MappingType type) throws searchCantFindMappingUnitInCollection {
 		for (MappingUnit mappingUnit : this.listOfMappings) {
 			if (mappingUnit.getType()==type) {
 				return mappingUnit;
 			}
 		}
-		throw new ExceptionsPack.mappingUnitDoesNotExist("No mapping field with type " + type + "exists");
+		throw new ExceptionsPack.searchCantFindMappingUnitInCollection("No mapping field with type " + type + "exists in collection");
 	}
 
 }

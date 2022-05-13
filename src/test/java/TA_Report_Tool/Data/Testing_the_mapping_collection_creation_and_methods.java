@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.Profile;
-import TA_Report_Tool.MainApp.ExceptionsPack.mappingUnitDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -60,7 +60,7 @@ public class Testing_the_mapping_collection_creation_and_methods {
 			assertNotNull(testProfile.getMappingCollection().getMappingUnitdByName("Date1"));
 			assertNotNull(testProfile.getMappingCollection().getMappingUnitdByName("Time1"));
 			assertNotNull(testProfile.getMappingCollection().getMappingUnitdByName("Employee Unique ID"));
-			assertThrows(ExceptionsPack.mappingUnitDoesNotExist.class, () -> {
+			assertThrows(ExceptionsPack.searchCantFindMappingUnitInCollection.class, () -> {
 				testProfile.getMappingCollection().getMappingUnitdByName("Mapping Field doesn't exists");
 			});
 
@@ -77,7 +77,7 @@ public class Testing_the_mapping_collection_creation_and_methods {
 			fullNameEmplMappField.setMask(fullNameEmplMask);
 			assertEquals(fullNameEmplMask,
 					testProfile.getMappingCollection().getMappingUnitdByName("Employee Full Name").getMask());
-		} catch (mappingUnitDoesNotExist | nullArgument e) {
+		} catch (searchCantFindMappingUnitInCollection | nullArgument e) {
 			e.printStackTrace();
 		}
 	}
@@ -90,7 +90,7 @@ public class Testing_the_mapping_collection_creation_and_methods {
 			assertEquals("Time1", testProfile.getMappingCollection().getMappingUnitdByType(MappingType.Time).getName());
 			assertEquals("Employee Unique ID",
 					testProfile.getMappingCollection().getMappingUnitdByType(MappingType.EmployeeUniqueId).getName());
-			assertThrows(ExceptionsPack.mappingUnitDoesNotExist.class, () -> {
+			assertThrows(ExceptionsPack.searchCantFindMappingUnitInCollection.class, () -> {
 				testProfile.getMappingCollection().getMappingUnitdByType(MappingType.SignalingDevice);
 			});
 
@@ -103,7 +103,7 @@ public class Testing_the_mapping_collection_creation_and_methods {
 			fullNameEmplMappField.setMask(fullNameEmplMask);
 			assertEquals(fullNameEmplMask,
 					testProfile.getMappingCollection().getMappingUnitdByType(MappingType.EmployeeFullName).getMask());
-		} catch (mappingUnitDoesNotExist | nullArgument e) {
+		} catch (searchCantFindMappingUnitInCollection | nullArgument e) {
 			e.printStackTrace();
 		}
 	}

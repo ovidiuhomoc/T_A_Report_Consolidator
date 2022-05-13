@@ -28,7 +28,8 @@ import TA_Report_Tool.Data.tableCell;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
 import TA_Report_Tool.MainApp.ExceptionsPack.dateOrTimeMissing;
-import TA_Report_Tool.MainApp.ExceptionsPack.mappingUnitDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack.headerNotScanned;
+import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 import TA_Report_Tool.MainApp.Profile;
@@ -94,7 +95,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 			while (!testProfile.getTableHeader().isScanDone()) {
 				// do nothing - waiting scan to be finished
 			}
-			scanResults = testProfile.getTableHeader().extractColsProperties();
+			scanResults = testProfile.getTableHeader().getColsPropertiesList();
 
 			// Then
 			assertEquals(true, testProfile.getTableHeader().isScanDone());
@@ -133,7 +134,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 
 			while (!testProfile.getTableHeader().isScanDone()) {
 			}
-			scanResults = testProfile.getTableHeader().extractColsProperties();
+			scanResults = testProfile.getTableHeader().getColsPropertiesList();
 
 			// Then
 			assertTrue(new Tools_Array_Equality_Test().headerEntryTypeUnorderedEquality(
@@ -161,7 +162,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 
 			// Then
 			assertThrows(ExecutionException.class, () -> {
-				testProfile.getTableHeader().extractColsProperties();
+				testProfile.getTableHeader().getColsPropertiesList();
 			});
 
 		} catch (nullNameConnection | connectionNotInitialized | nullArgument | InterruptedException
@@ -170,7 +171,6 @@ public class Testing_the_TableHeader_scanning_in_profile {
 		}
 	}
 
-	@Disabled
 	@Test
 	void Testing_the_Table_Header_scan_mock_random_row_content() {
 		try {
@@ -186,7 +186,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 
 			// When
 			testProfile.getTableHeader().scanForColsPropertiesMock(mockSource);
-			scanResults = testProfile.getTableHeader().extractColsProperties();
+			scanResults = testProfile.getTableHeader().getColsPropertiesList();
 
 			// Then
 			assertTrue(new Tools_Array_Equality_Test().headerEntryTypeUnorderedEquality(
@@ -199,7 +199,6 @@ public class Testing_the_TableHeader_scanning_in_profile {
 		}
 	}
 
-	@Disabled
 	@Test
 	void Testing_the_Table_Header_scan_mock_random_content_second_row() {
 		try {
@@ -217,7 +216,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 			// When
 			testProfile.getTableHeader().setTableHeaderStartCell(new tableCell(2, 1));
 			testProfile.getTableHeader().scanForColsPropertiesMock(mockSource);
-			scanResults = testProfile.getTableHeader().extractColsProperties();
+			scanResults = testProfile.getTableHeader().getColsPropertiesList();
 
 			// Then
 			assertTrue(new Tools_Array_Equality_Test().headerEntryTypeUnorderedEquality(
@@ -230,9 +229,31 @@ public class Testing_the_TableHeader_scanning_in_profile {
 		}
 	}
 
-	@Disabled
 	@Test
 	void Testing_the_Table_Header_scan_mock_no_connection_setup_Exception_throwing() {
+		try {
+			// Given
+			Profile testProfile = new Profile();
+			CSVdataSource mockSource = mock(CSVdataSource.class);
+			Tools_Random_Generator rand = new Tools_Random_Generator();
+			String randGenRow1 = rand.randomCSVrowGenerator(30, ",");
+			when(mockSource.getNextLine()).thenReturn(randGenRow1);
+			
+			//When
+			testProfile.initializeCSVConn("Conn to mock Source","path to nowhere");
+
+			// When Then
+			assertThrows(ExceptionsPack.headerNotScanned.class, () -> {
+				testProfile.getTableHeader().changeMappingUnitOfColumnWithName("Date in Header", new MappingUnit("Date Version 1", new MaskTemplate(), MappingType.Date));
+			});
+
+		} catch (IOException | nullArgument | nullNameConnection | InterruptedException | ExecutionException | connectionNotInitialized | dateOrTimeMissing e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	void Testing_the_Table_Header_exceptio_throwing_of_extracting_data_without_scan() {
 		try {
 			// Given
 			Profile testProfile = new Profile();
@@ -250,8 +271,7 @@ public class Testing_the_TableHeader_scanning_in_profile {
 			e.printStackTrace();
 		}
 	}
-
-	@Disabled
+	
 	@Test
 	void Testing_the_Table_Header_scan_mock_set_columns_type() {
 		try {
@@ -272,10 +292,10 @@ public class Testing_the_TableHeader_scanning_in_profile {
 
 			// Then
 			assertEquals(MappingType.EmployeeUniqueId,
-					testProfile.getTableHeader().extractColsProperties().get(0).getMappingUnit().getType());
+					testProfile.getTableHeader().getColsPropertiesList().get(0).getMappingUnit().getType());
 
 		} catch (nullNameConnection | IOException | connectionNotInitialized | InterruptedException | ExecutionException
-				| mappingUnitDoesNotExist | nullArgument | dateOrTimeMissing e) {
+				| searchCantFindMappingUnitInCollection | nullArgument | dateOrTimeMissing | headerNotScanned e) {
 			e.printStackTrace();
 		}
 	}

@@ -7,5 +7,5 @@ import TA_Report_Tool.Tests.Testing_the_connections_setup;
 
 @Suite
 @SelectClasses({ Testing_the_connections_setup.class })
-class Test_Suite_3_Connections {
+class Test_Suite_2_Connections {
 }

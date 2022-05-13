@@ -4,17 +4,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import TA_Report_Tool.Data.ConnType;
 import TA_Report_Tool.Data.Connection;
+import TA_Report_Tool.Data.DataSource;
 import TA_Report_Tool.Data.MappingCollection;
 import TA_Report_Tool.Data.TableData;
 import TA_Report_Tool.Data.TableHeader;
+import TA_Report_Tool.Filters.TAfiltersAndSettings;
 import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
 import TA_Report_Tool.MainApp.ExceptionsPack.dateOrTimeMissing;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 import TA_Report_Tool.MainApp.ExceptionsPack.profileDoesNotExist;
+import TA_Report_Tool.MainApp.ExceptionsPack.rowParameterNotHigherThanZero;
+import TA_Report_Tool.MainApp.ExceptionsPack.tableDataNotInitialized;
+import TA_Report_Tool.Processors.ContentScannerThreadWrapper;
+import static TA_Report_Tool.Tools.check.*;
 
 public class Profile {
 	private String name;
@@ -40,6 +49,7 @@ public class Profile {
 		}
 
 		this.mappingCollection = new MappingCollection();
+		this.localFiltersAndSettings = new TAfiltersAndSettings(this);
 	}
 
 	/**
@@ -59,6 +69,7 @@ public class Profile {
 		}
 
 		this.mappingCollection = new MappingCollection();
+		this.localFiltersAndSettings = new TAfiltersAndSettings(this);
 	}
 
 	public static void reset() {
@@ -183,28 +194,6 @@ public class Profile {
 	 * runs Current month determined by most recent event date and period includes
 	 * current month
 	 */
-	private int repPeriod = 1;
-
-	/**
-	 * Method changes the default period of 1 month for the T&A report with the
-	 * specified value
-	 * 
-	 * @param period is the number of months (int) for which the T&A reports should
-	 *               run
-	 */
-	public void setRepMonthsPeriod(int period) {
-		this.repPeriod = period;
-	}
-
-	/**
-	 * Method returns the current value of months for which the T&A report should be
-	 * run
-	 * 
-	 * @return an int representing the number of months for which T&A report to run
-	 */
-	public int getRepMonthsPeriod() {
-		return this.repPeriod;
-	}
 
 	/*
 	 * ======================== Section 3 ========================
@@ -213,78 +202,6 @@ public class Profile {
 	 * The T&A report will consider as check-in all events [allEvents - true] or
 	 * only the events from set selEvents
 	 */
-	private boolean allEvents = true;
-	private Set<String> selEvents = new HashSet<String>();
-
-	/**
-	 * Method used to change the filtering mode from all events to a list of events
-	 * and adding 1 event to the list
-	 * 
-	 * @param event is a String type parameter used for adding one event to the
-	 *              event list
-	 */
-	public void addEvent(String event) {
-		this.selEvents.add(event);
-		this.allEvents = false;
-	}
-
-	/**
-	 * Method verifies if the event is contained by the events list used for
-	 * filtering
-	 * 
-	 * @param event is a String parameter representing the event to be checked
-	 * @return method returns a boolean indicating the containing of specified event
-	 */
-	public boolean containsEvent(String event) {
-		return this.selEvents.contains(event);
-	}
-
-	/**
-	 * Method removes an event from filtering list and if list does not contains any
-	 * filter anymore, changes filtering mode to all events
-	 * 
-	 * @param event a String with the event to be removed
-	 */
-	public void removeEvent(String event) {
-		if (this.selEvents.contains(event)) {
-			this.selEvents.remove(event);
-		}
-		if (selEvents.size() == 0) {
-			this.allEvents = true;
-		}
-	}
-
-	/**
-	 * Method checks if filtering is set to All Events or selected events only
-	 * 
-	 * @return a boolean true if the filtering is set to All Events
-	 */
-	public boolean isAllEventsActive() {
-		return this.allEvents;
-	}
-
-	/**
-	 * Method returns the entire Set of events into an Array format for easier
-	 * iteration
-	 * 
-	 * @return and Array of String type
-	 */
-	public String[] eventsToArray() {
-		String[] arr = selEvents.toArray(new String[0]);
-		return arr;
-	}
-
-	/**
-	 * Method clears the full Set of events used for filtering and switches
-	 * filtering mode to All Events
-	 */
-	public void useAllEvents() {
-		this.selEvents.clear();
-		this.allEvents = true;
-	}
-
-	// T&A report filtration by value of other columns (other than events) -
-	// implementation to be considered
 
 	/*
 	 * ========================== Section 4 ===========================
@@ -469,16 +386,17 @@ public class Profile {
 
 	private TableHeader tableHeader = null;
 	private MappingCollection mappingCollection = null;
-	private TableData tableData;
+	private TableData tableData = null;
 
 	private void initializeDataStructures()
 			throws InterruptedException, ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument {
 		this.tableData = new TableData();
-		this.tableHeader = new TableHeader(this.getActiveConn(),this.tableData);
+		this.tableHeader = new TableHeader(this.getActiveConn(), this.tableData);
+		this.localFiltersAndSettings = new TAfiltersAndSettings(this);
 	}
 
 	public TableHeader getTableHeader() throws connectionNotInitialized {
-		if (this.getActiveConn() == null) {
+		if (isNull(this.getActiveConn())) {
 			throw new ExceptionsPack.connectionNotInitialized("The connection it was not initialized and it is null");
 		}
 		return this.tableHeader;
@@ -497,10 +415,81 @@ public class Profile {
 	 * read.
 	 */
 
-	// functie de scan continut
-	// la momentul scanarii, se reface complet obiectul de stocare
+	public TableData getTableData() {
+		return this.tableData;
+	}
 
-	// obiectul de stocare contine un ArrayList cu obiecte coloana + numar de
-	// randuri totale (fara header)
+	private Future<Void> currentRowScanResults;
+	private ExecutorService executor = Executors.newFixedThreadPool(1);
+	private boolean contentScanMockFlag = false;
+	private DataSource contentScanMockDS = null;
 
+	public void scanAndStoreTableContent() throws connectionNotInitialized {
+		ContentScannerThreadWrapper contentScanner = new ContentScannerThreadWrapper();
+
+		if (this.contentScanMockFlag) {
+			contentScanner.setMockDataSourceForMockScan(this.contentScanMockDS);
+			this.contentScanMockFlag = false;
+			this.contentScanMockDS = null;
+		}
+
+		contentScanner.transferActiveProfile(this);
+		contentScanner.setStartRowForScanner(
+				this.getTableHeader().getTableHeaderStartCellForEndInternalUse().nextRowNewObject());
+
+		currentRowScanResults = this.executor.submit(contentScanner);
+	}
+
+	public void scanAndStoreTableContentFromMock(DataSource contentScanMockDS) throws connectionNotInitialized {
+		this.contentScanMockFlag = true;
+		this.contentScanMockDS = contentScanMockDS;
+		this.scanAndStoreTableContent();
+	}
+
+	public boolean isTableContentScanningAndParsingDone() {
+		if (this.currentRowScanResults.isDone()) {
+			return true;
+		}
+		return false;
+	}
+
+	public void captureExceptionsAfterScanning() throws InterruptedException, ExecutionException {
+		if (this.currentRowScanResults.isDone()) {
+			this.currentRowScanResults.get();
+		}
+	}
+
+	/*
+	 * ========================== Section 7 ===========================
+	 * ================ TA Report Filters & Settings ==================
+	 *
+	 */
+
+	private TAfiltersAndSettings localFiltersAndSettings = null;
+	private TableData filteredTableData = null;
+
+	public void filterTableData() throws tableDataNotInitialized, InterruptedException, ExecutionException,
+			connectionNotInitialized, dateOrTimeMissing, nullArgument, rowParameterNotHigherThanZero {
+		if (isFalse(this.tableData.isInitialized())) {
+			throw new ExceptionsPack.tableDataNotInitialized(
+					"Can't filter the original data as table data was not initialized (no data was copied into table data). Typpically this step happens upon header scanning (or ScanForColsProperties)");
+		}
+
+		this.filteredTableData = new TableData();
+		this.filteredTableData.copyStructureFrom(this.tableData);
+
+		for (int i = 1; i <= this.tableData.getRowCount(); i++) {
+			if (this.tableData.passFiltersAtRow(i, this.localFiltersAndSettings)) {
+				this.filteredTableData.copyDataRowFrom(i, this.tableData);
+			}
+		}
+	}
+
+	public TAfiltersAndSettings dataFiltersAndSettings() {
+		return this.localFiltersAndSettings;
+	}
+
+	public TableData getFilteredData() {
+		return this.filteredTableData;
+	}
 }

@@ -8,13 +8,21 @@ import java.io.IOException;
 public class CSVdataSource implements DataSource {
 	private BufferedReader csvReader = null;
 	private String rowContent = null;
+	private FileReader fileReader = null;
 
+	@Override
 	public String getNextLine() throws IOException {
 		this.rowContent = this.csvReader.readLine();
 		return this.rowContent;
 	}
 
 	public CSVdataSource(String filePath) throws FileNotFoundException {
-		this.csvReader = new BufferedReader(new FileReader(filePath));
+		this.fileReader = new FileReader(filePath);
+		this.csvReader = new BufferedReader(this.fileReader);
+	}
+
+	@Override
+	public void closeFile() throws IOException {
+		this.fileReader.close();		
 	}
 }

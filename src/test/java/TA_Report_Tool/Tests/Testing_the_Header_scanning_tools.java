@@ -25,7 +25,7 @@ import TA_Report_Tool.Tools_for_Tests.Tools_Random_Generator;
 public class Testing_the_Header_scanning_tools {
 
 	@Test
-	void Testing_the_HeaderEntry_methods() {
+	void Testing_the_ColumnProperties_methods() {
 		try {
 			ArrayList<ColumnProperties> columnPropertiesList = new ArrayList<ColumnProperties>();
 			int count = 0;

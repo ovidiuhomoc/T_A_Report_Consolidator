@@ -133,6 +133,7 @@ public class ContentCSVparser {
 		}
 
 		if (isEmptyColRowEnd(currentChar, nextChar)) {
+			this.addCurrentCol();
 			this.addEmptyCol();
 			return;
 		}
