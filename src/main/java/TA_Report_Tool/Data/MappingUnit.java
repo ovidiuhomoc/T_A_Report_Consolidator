@@ -1,5 +1,6 @@
 package TA_Report_Tool.Data;
 
+import static TA_Report_Tool.Tools.check.*;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
 import TA_Report_Tool.Tools.check;
@@ -38,17 +39,15 @@ public class MappingUnit {
 	 * @throws nullArgument 
 	 */
 	public MappingUnit(String name, MaskTemplate mask, MappingType type) throws nullArgument {
-		new check();
-
-		if (check.isNull(name)) {
+		if (isNull(name)) {
 			throw new ExceptionsPack.nullArgument("The MappingUnit's name was null");
 		}
 		
-		if (check.isNull(mask)) {
+		if (isNull(mask)) {
 			throw new ExceptionsPack.nullArgument("The MappingUnit's mask was null");
 		}
 		
-		if (check.isNull(type)) {
+		if (isNull(type)) {
 			throw new ExceptionsPack.nullArgument("The MappingUnit's type was null");
 		}
 

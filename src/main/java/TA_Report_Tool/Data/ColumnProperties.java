@@ -1,6 +1,7 @@
 
 package TA_Report_Tool.Data;
 
+import static TA_Report_Tool.Tools.check.*;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.Tools.*;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
@@ -37,11 +38,11 @@ public class ColumnProperties {
 	public ColumnProperties(String columnName, boolean toBeLoaded, MappingUnit mappingUnit, int tableHeaderIndex)
 			throws nullArgument {
 		
-		if (check.isNull(columnName)) {
+		if (isNull(columnName)) {
 			throw new ExceptionsPack.nullArgument("The passed column name argument is null");
 		}
 		
-		if (check.isNull(mappingUnit)) {
+		if (isNull(mappingUnit)) {
 			throw new ExceptionsPack.nullArgument("The passed mapping unit argument is null");
 		}
 		

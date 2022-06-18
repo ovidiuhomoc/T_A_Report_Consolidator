@@ -1,5 +1,6 @@
 package TA_Report_Tool.Processors;
 
+import static TA_Report_Tool.Tools.check.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import TA_Report_Tool.Data.tableCell;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.ExceptionsPack.contentNotFound;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
+import TA_Report_Tool.Tools.check;
 
 public class CSVHeaderScanner {
 
@@ -42,7 +44,7 @@ public class CSVHeaderScanner {
 	}
 
 	public ArrayList<ColumnProperties> scanForHeader() throws IOException, contentNotFound, nullArgument{
-		if (mockFlag == false) {
+		if (isFalse(mockFlag)) {
 			this.csvSource = new CSVdataSource(this.activeConn.getFilePath());
 		} else {
 			this.csvSource = this.mockCSVSource;
@@ -71,6 +73,7 @@ public class CSVHeaderScanner {
 					i - this.startHeaderCell.getColCoordinates()));
 		}
 
+		this.csvSource.closeFile();
 		return this.selectedHeader;
 	}
 

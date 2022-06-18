@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.ExceptionsPack.rowParameterNotHigherThanZero;
 
-public class ColumnData<T> {
+public class ColumnData {
 	private ColumnProperties currentColumnProperties = null;
-	private ArrayList<T> currentColumnData = new ArrayList<T>();
+	private ArrayList<Object> currentColumnData = new ArrayList<Object>();
 
 	/**
 	 * Constructor that creates new ColumnData object used to store the data of a
@@ -35,14 +35,15 @@ public class ColumnData<T> {
 		return this.currentColumnProperties.getMappingUnit();
 	}
 
-	public void addData(T data) {
+	public void addData(Object data) {
 		this.currentColumnData.add(data);
 	}
 
-	public T getDataAt(int row) throws rowParameterNotHigherThanZero {
+	public Object getDataAt(int row) throws rowParameterNotHigherThanZero {
 		if (row < 1) {
 			throw new ExceptionsPack.rowParameterNotHigherThanZero("The requested row:" + row + " is not at least 1");
 		}
 		return currentColumnData.get(row - 1);
 	}
+
 }

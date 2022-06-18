@@ -2,6 +2,30 @@ package TA_Report_Tool.MainApp;
 
 public class ExceptionsPack {
 
+	public static class tableDataMethodError extends Exception {
+		public tableDataMethodError(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class TAreportGenerationException extends Exception {
+		public TAreportGenerationException(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class cantParseEmptyStringForCurrentType extends Exception {
+		public cantParseEmptyStringForCurrentType(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class headerNotScanned extends Exception {
+		public headerNotScanned(String msg) {
+			super(msg);
+		}
+	}
+
 	public static class tableDataNotInitialized extends Exception {
 		public tableDataNotInitialized(String msg) {
 			super(msg);
@@ -74,8 +98,8 @@ public class ExceptionsPack {
 		}
 	}
 
-	public static class mappingUnitDoesNotExist extends Exception {
-		public mappingUnitDoesNotExist(String msg) {
+	public static class searchCantFindMappingUnitInCollection extends Exception {
+		public searchCantFindMappingUnitInCollection(String msg) {
 			super(msg);
 		}
 	}

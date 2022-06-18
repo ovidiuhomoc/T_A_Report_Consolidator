@@ -1,5 +1,7 @@
 package TA_Report_Tool.Processors;
 
+import static TA_Report_Tool.Tools.check.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,16 +12,15 @@ import java.util.concurrent.ExecutionException;
 import TA_Report_Tool.Data.ColumnProperties;
 import TA_Report_Tool.Data.MappingUnit;
 import TA_Report_Tool.Data.MaskingItem;
-import TA_Report_Tool.Data.TableHeader;
 import TA_Report_Tool.MainApp.ExceptionsPack;
 import TA_Report_Tool.MainApp.ExceptionsPack.cantBeParsedWithCurrentMappingMask;
 import TA_Report_Tool.MainApp.ExceptionsPack.columnPropertiesDoesNotExist;
-import TA_Report_Tool.MainApp.ExceptionsPack.parsingFailedDueToNullMappingMask;
-import TA_Report_Tool.Tools.check;
-import TA_Report_Tool.MainApp.ExceptionsPack.nullColumnPropertiesPassed;
 import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
 import TA_Report_Tool.MainApp.ExceptionsPack.dateOrTimeMissing;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
+import TA_Report_Tool.MainApp.ExceptionsPack.nullColumnPropertiesPassed;
+import TA_Report_Tool.MainApp.ExceptionsPack.cantParseEmptyStringForCurrentType;
+import TA_Report_Tool.MainApp.ExceptionsPack.parsingFailedDueToNullMappingMask;
 
 public class ContentParserByMappingUnit<T> {
 
@@ -30,10 +31,11 @@ public class ContentParserByMappingUnit<T> {
 		this.listOfColumnProperties = listOfColumnProperties;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T parse(String stringToBeParsed, String columnName) throws nullColumnPropertiesPassed,
-			InterruptedException, ExecutionException, connectionNotInitialized, columnPropertiesDoesNotExist,
-			cantBeParsedWithCurrentMappingMask, parsingFailedDueToNullMappingMask, dateOrTimeMissing, nullArgument {
+	@SuppressWarnings({ "unchecked", "hiding" })
+	public <T> T parse(String stringToBeParsed, String columnName)
+			throws nullColumnPropertiesPassed, InterruptedException, ExecutionException, connectionNotInitialized,
+			columnPropertiesDoesNotExist, cantBeParsedWithCurrentMappingMask, parsingFailedDueToNullMappingMask,
+			dateOrTimeMissing, nullArgument, cantParseEmptyStringForCurrentType {
 		MappingUnit currentColumnMapping = getColPropertiesByColName(columnName).getMappingUnit();
 		ArrayList<MaskingItem> mask = currentColumnMapping.getMask().toArrayList();
 
@@ -43,12 +45,16 @@ public class ContentParserByMappingUnit<T> {
 
 		if ((isLimitedValue()) && !stringSizeWithinLimits(stringToBeParsed, minCountOfCh, maxCountOfCh)) {
 			throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-					"The row can't be parsed with current mask as the string size does not fit in the expected size");
+					"The row can't be parsed with current mask as the string size does not fit in the expected size.\n The mask indicates a specific limited number of ch. and string does not fit in min("
+							+ minCountOfCh + ") and max(" + maxCountOfCh + ").\nThe String is:" + stringToBeParsed
+							+ " and its size is:" + stringToBeParsed.length() + " and column name is:" + columnName);
 		}
 
 		if ((!isLimitedValue()) && (stringToBeParsed.length() > maxCountOfCh)) {
 			throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-					"The row can't be parsed with current mask as the string size does not fit in the expected size");
+					"The row can't be parsed with current mask as the string size does not fit in the expected size.\n The mask indicates a not a limited number of ch. but string is over system's capable max("
+							+ maxCountOfCh + ").\nThe tring is:" + stringToBeParsed + " and its size is:"
+							+ stringToBeParsed.length() + " and column name is:" + columnName);
 		}
 
 		switch (currentColumnMapping.getType()) {
@@ -86,7 +92,7 @@ public class ContentParserByMappingUnit<T> {
 	}
 
 	private ColumnProperties getColPropertiesByColName(String columnName) throws nullArgument {
-		if (check.isNull(columnName)) {
+		if (isNull(columnName)) {
 			throw new ExceptionsPack.nullArgument("Cannot look for a column which name argument is null");
 		}
 		for (ColumnProperties x : listOfColumnProperties) {
@@ -97,8 +103,30 @@ public class ContentParserByMappingUnit<T> {
 		return null;
 	}
 
-	private Object parseCustomText(String stringToBeParsed, ArrayList<MaskingItem> mask)
+	private String parseCustomText(String stringToBeParsed, ArrayList<MaskingItem> mask)
 			throws cantBeParsedWithCurrentMappingMask {
+		if (mask.get(0) == MaskingItem.AnyString) {
+			return stringToBeParsed;
+		}
+
+		if (mask.get(0) == MaskingItem.Number) {
+			for (int i = 0; i < stringToBeParsed.length(); i++) {
+				char c = stringToBeParsed.charAt(i);
+				if (!"0123456789".contains(String.valueOf(c))) {
+					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
+							"Parsing of string with current mapping failed.Expected a number containing only digits from 0 to 9 and received "
+									+ String.valueOf(c));
+				}
+			}
+			return stringToBeParsed;
+		}
+
+		if (stringToBeParsed.length() != mask.size()) {
+			throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
+					"Parsing of string with current mapping failed.The mask covers a fixed size string (" + mask.size()
+							+ ") and the string to be parsed has different length of " + stringToBeParsed.length());
+		}
+
 		for (int i = 0; i < mask.size(); i++) {
 			MaskingItem currentMask = mask.get(i);
 			char c = stringToBeParsed.charAt(i);
@@ -107,110 +135,131 @@ public class ContentParserByMappingUnit<T> {
 			case SpaceSep:
 				if (c != ' ') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected ' ' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepColons:
 				if (c != ':') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected ':' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepSemiColons:
 				if (c != ';') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected ';' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepDot:
 				if (c != '.') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '.' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepComma:
 				if (c != ',') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected ',' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepExclamationMark:
 				if (c != '!') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '!' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepMinus:
 				if (c != '-') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '-' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepSlash:
 				if (c != '/') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '/' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepBackSlah:
 				if (c != '\\') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '\' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SepVerticalLine:
 				if (c != '|') {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected '|' and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SingleDigitInt:
 				if (!"0123456789".contains(String.valueOf(c))) {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected a digit from 0 to 9 and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SingleCharacter:
 				if (!"qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM".contains(String.valueOf(c))) {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected an upperCase or lowerCase letter and received "
+									+ String.valueOf(c));
 				}
 				break;
 			case SingleSpecialCh:
 				if (!"`~!@#$%^&*()_-+=[]{};':\",./<>?\\|/*-+".contains(String.valueOf(c))) {
 					throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-							"Parsing of string with current mapping failed");
+							"Parsing of string with current mapping failed.Expected a special character and received "
+									+ String.valueOf(c));
 				}
 				break;
 			default:
 				throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-						"Parsing of string with current mapping failed");
+						"Parsing of string with current mapping failed.Does not fit in any of cases and received "
+								+ String.valueOf(c) + " The Masking Item is:" + currentMask);
 			}
 		}
 		return stringToBeParsed;
 	}
 
 	private Object parseNumber(String stringToBeParsed, ArrayList<MaskingItem> mask)
-			throws parsingFailedDueToNullMappingMask {
-		/*
-		 * if ((!isLimitedValue()) && ((mask.size() != 1) || (mask.get(0) !=
-		 * MaskingItem.Number))) { throw new
-		 * ExceptionsPack.ParsingFailedDueToNullMappingMask(
-		 * "Parsing of ArrayList Mapping returned null. ArrayList of MaskingItem is null"
-		 * ); }
-		 */
-		int parsedInt = 0;
-		parsedInt = Integer.parseInt(stringToBeParsed);
-		return parsedInt;
+			throws parsingFailedDueToNullMappingMask, cantParseEmptyStringForCurrentType {
+
+		if (isEmpty(stringToBeParsed)) {
+			throw new ExceptionsPack.cantParseEmptyStringForCurrentType(
+					"Parsing failed as the string to be parsed is empty and is unsupported for current type");
+		}
+		if (stringToBeParsed.contains(".")) {
+			return Float.parseFloat(stringToBeParsed);
+		} else {
+			return Integer.parseInt(stringToBeParsed);
+		}
+
 	}
 
 	private Object parseTime(String stringToBeParsed, ArrayList<MaskingItem> mask)
-			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask {
+			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask,
+			cantParseEmptyStringForCurrentType {
 		LocalTime parsedTime = null;
 		String maskStoredAsString = maskArrayListToStringFormaterFormat(mask);
-		if (maskStoredAsString == null) {
+		if (isNull(maskStoredAsString)) {
 			throw new ExceptionsPack.parsingFailedDueToNullMappingMask(
 					"Parsing of ArrayList Mapping returned null. ArrayList of MaskingItem is null");
+		}
+
+		if (isEmpty(stringToBeParsed)) {
+			throw new ExceptionsPack.cantParseEmptyStringForCurrentType(
+					"Parsing failed as the string to be parsed is empty and is unsupported for current type");
 		}
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(maskStoredAsString);
@@ -225,13 +274,20 @@ public class ContentParserByMappingUnit<T> {
 	}
 
 	private LocalDate parseDate(String stringToBeParsed, ArrayList<MaskingItem> mask)
-			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask {
+			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask,
+			cantParseEmptyStringForCurrentType {
 		LocalDate parsedDate = null;
 		String maskStoredAsString = maskArrayListToStringFormaterFormat(mask);
-		if (maskStoredAsString == null) {
+		if (isNull(maskStoredAsString)) {
 			throw new ExceptionsPack.parsingFailedDueToNullMappingMask(
 					"Parsing of ArrayList Mapping returned null. ArrayList of MaskingItem is null");
 		}
+
+		if (isEmpty(stringToBeParsed)) {
+			throw new ExceptionsPack.cantParseEmptyStringForCurrentType(
+					"Parsing failed as the string to be parsed is empty and is unsupported for current type");
+		}
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(maskStoredAsString);
 		try {
 			parsedDate = LocalDate.parse(stringToBeParsed, formatter);
@@ -243,13 +299,20 @@ public class ContentParserByMappingUnit<T> {
 	}
 
 	private Object parseDateAndTime(String stringToBeParsed, ArrayList<MaskingItem> mask)
-			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask {
+			throws parsingFailedDueToNullMappingMask, cantBeParsedWithCurrentMappingMask,
+			cantParseEmptyStringForCurrentType {
 		LocalDateTime parsedDateTime = null;
 		String maskStoredAsString = maskArrayListToStringFormaterFormat(mask);
-		if (maskStoredAsString == null) {
+		if (isNull(maskStoredAsString)) {
 			throw new ExceptionsPack.parsingFailedDueToNullMappingMask(
 					"Parsing of ArrayList Mapping returned null. ArrayList of MaskingItem is null");
 		}
+
+		if (isEmpty(stringToBeParsed)) {
+			throw new ExceptionsPack.cantParseEmptyStringForCurrentType(
+					"Parsing failed as the string to be parsed is empty and is unsupported for current type");
+		}
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(maskStoredAsString);
 
 		try {
