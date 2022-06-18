@@ -35,7 +35,6 @@ public class Testing_file_generated_by_real_system {
 
 	private MappingUnit datetime, empID, number, text, event, device, fullname;
 
-	@Disabled
 	@Test
 	public void Final_complete_testing_of_a_real_file() {
 		try {
