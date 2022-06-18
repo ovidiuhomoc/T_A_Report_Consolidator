@@ -119,23 +119,23 @@ public class Testing_the_TA_generation {
 			// testProfile.getDetailedTAReport().displayTableContentForDebugging();
 			// testProfile.getSummaryTAReport().displayTableContentForDebugging();
 
-			expectedArray.add(8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getDetailedTAReport().vlookup("1", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(8);
-			expectedArray.add(8);
+			expectedArray.add((float)8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getDetailedTAReport().vlookup("543", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getSummaryTAReport().vlookup("1", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(16);
+			expectedArray.add((float)16);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getSummaryTAReport().vlookup("543", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
@@ -198,23 +198,23 @@ public class Testing_the_TA_generation {
 			// testProfile.getDetailedTAReport().displayTableContentForDebugging();
 			// testProfile.getSummaryTAReport().displayTableContentForDebugging();
 
-			expectedArray.add(8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getDetailedTAReport().vlookup("1", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(8);
-			expectedArray.add(8);
+			expectedArray.add((float)8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getDetailedTAReport().vlookup("543", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(8);
+			expectedArray.add((float)8);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getSummaryTAReport().vlookup("1", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();
 
-			expectedArray.add(16);
+			expectedArray.add((float)16);
 			assertArrayEquals(expectedArray.toArray(),
 					testProfile.getSummaryTAReport().vlookup("543", "User ID", "Total Worked Hours").toArray());
 			expectedArray.clear();

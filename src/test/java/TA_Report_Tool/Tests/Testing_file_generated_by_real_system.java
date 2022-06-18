@@ -169,15 +169,7 @@ public class Testing_file_generated_by_real_system {
 			// Data");
 
 			createFiltersForAllColumns(companyStarOne);
-			companyStarOne.dataFiltersAndSettings().getFilter("Filter for column: Status")
-					.addToExclusionList("Card Not Found");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 0");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 1");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 2");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 4");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 6");
-			companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 8");
-			companyStarOne.dataFiltersAndSettings().inOut().attachColumn("Reader");
+			setupFiltersForSpecificColumns(companyStarOne);
 
 			companyStarOne.filterTableData();
 			// companyStarOne.getFilteredData().displayTableContentForDebugging("Filtered
@@ -224,6 +216,18 @@ public class Testing_file_generated_by_real_system {
 			e.printStackTrace();
 		}
 
+	}
+
+	private void setupFiltersForSpecificColumns(Profile companyStarOne) {
+		companyStarOne.dataFiltersAndSettings().getFilter("Filter for column: Status")
+				.addToExclusionList("Card Not Found");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 0");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 1");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckIn("pw6k - Reader 2");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 4");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 6");
+		companyStarOne.dataFiltersAndSettings().inOut().addCheckOut("pw6k - Reader 8");
+		companyStarOne.dataFiltersAndSettings().inOut().attachColumn("Reader");
 	}
 
 	private void createFiltersForAllColumns(Profile realCompanyProfile)
