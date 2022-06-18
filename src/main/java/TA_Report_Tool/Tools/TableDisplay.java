@@ -23,7 +23,7 @@ public class TableDisplay {
 		this.table.add(this.currentRow);
 	}
 
-	public void display() {
+	public void display(String tableName) {
 		int maxChBlockSize = 0;
 
 		for (innerRowClass x : this.table) {
@@ -41,7 +41,12 @@ public class TableDisplay {
 		}
 
 		System.out.println();
-		System.out.println("--- Display Started ---");
+		if (tableName.equals("")) {
+			System.out.println("--- Display Started ---");
+		} else {
+			System.out.println("--- Display Started for table " + tableName + " ---");
+		}
+
 		for (innerRowClass x : table) {
 			for (String y : x.rowToArray()) {
 				print(y);

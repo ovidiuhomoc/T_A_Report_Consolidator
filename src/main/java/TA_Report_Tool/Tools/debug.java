@@ -8,22 +8,22 @@ public class debug {
 	private static boolean displayFlag = false;
 	private static ArrayList<String> toDisplay = new ArrayList<>();
 
-	public static void displayOn(String cls) {
+	public static void debugDisplayOn(String className) {
 		displayFlag = true;
-		toDisplay.add(cls);
+		toDisplay.add(className);
 	}
 
-	public static void displayOff() {
+	public static void debugDisplayOff() {
 		displayFlag = false;
 		toDisplay.clear();
 	}
 
-	public static void display(String cls, String string) {
+	public static void debugDisplay(String className, String string) {
 		if (isFalse(displayFlag)) {
 			return;
 		}
 
-		if (toDisplay.contains(cls)) {
+		if (toDisplay.contains(className)) {
 			System.out.println(string);
 		}
 	}

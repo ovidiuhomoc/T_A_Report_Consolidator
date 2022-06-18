@@ -84,7 +84,7 @@ public class StdFilter {
 		
 		this.setMaxLimit(Integer.MAX_VALUE);
 		this.setMinLimit(Integer.MIN_VALUE);
-		display(this.getClass().getSimpleName(),"\t All lists and limits that were not null, were cleared");
+		debugDisplay(this.getClass().getSimpleName(),"\t All lists and limits that were not null, were cleared");
 	}
 
 	public void clearExclusionList() {
@@ -108,7 +108,7 @@ public class StdFilter {
 			return;
 		}
 		this.minLimit = minLimit;
-		display(this.getClass().getSimpleName(),"\t Minimum limit set");
+		debugDisplay(this.getClass().getSimpleName(),"\t Minimum limit set");
 	}
 
 	public void setMaxLimit(int maxLimit) {
@@ -168,28 +168,28 @@ public class StdFilter {
 	}
 
 	public <T> boolean passFilterCriterias(T dataToPassFilters) {
-		display(this.getClass().getSimpleName(),
+		debugDisplay(this.getClass().getSimpleName(),
 				"\t Analyzing standard filter pass for " + String.valueOf(dataToPassFilters));
 		if (typeIsText()) {
 			String txt = (String) dataToPassFilters;
 
 			if (isFalse(passTxtExclusionList(txt))) {
-				display(this.getClass().getSimpleName(), "\t passTxtExclusionList(" + txt + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passTxtExclusionList(" + txt + ") failed");
 				return false;
 			}
 
 			if (isFalse(passTxtInclusionList(txt))) {
-				display(this.getClass().getSimpleName(), "\t passTxtInclusionList(" + txt + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passTxtInclusionList(" + txt + ") failed");
 				return false;
 			}
 
 			if (isFalse(passTxtContainsSubtext(txt))) {
-				display(this.getClass().getSimpleName(), "\t passTxtContainsSubtext(" + txt + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passTxtContainsSubtext(" + txt + ") failed");
 				return false;
 			}
 
 			if (isFalse(passTxtExcludesSubtext(txt))) {
-				display(this.getClass().getSimpleName(), "\t passTxtExcludesSubtext(" + txt + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passTxtExcludesSubtext(" + txt + ") failed");
 				return false;
 			}
 
@@ -198,22 +198,22 @@ public class StdFilter {
 			int no = (Integer) dataToPassFilters;
 
 			if (isFalse(passNoEqualOrOverMinLimit(no))) {
-				display(this.getClass().getSimpleName(), "\t passNoEqualOrOverMinLimit(" + no + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passNoEqualOrOverMinLimit(" + no + ") failed");
 				return false;
 			}
 
 			if (isFalse(passNoEqualOrBellowMaxLimit(no))) {
-				display(this.getClass().getSimpleName(), "\t passNoEqualOrBellowMaxLimit(" + no + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passNoEqualOrBellowMaxLimit(" + no + ") failed");
 				return false;
 			}
 
 			if (isFalse(passNoOnInclusionList(no))) {
-				display(this.getClass().getSimpleName(), "\t passNoOnInclusionList(" + no + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passNoOnInclusionList(" + no + ") failed");
 				return false;
 			}
 
 			if (isFalse(passNoNotOnExclusionList(no))) {
-				display(this.getClass().getSimpleName(), "\t passNoNotOnExclusionList(" + no + ") failed");
+				debugDisplay(this.getClass().getSimpleName(), "\t passNoNotOnExclusionList(" + no + ") failed");
 				return false;
 			}
 
@@ -319,12 +319,12 @@ public class StdFilter {
 	}
 
 	private boolean passNoNotOnExclusionList(int no) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " is on exclusion list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " is on exclusion list");
 		return !this.noExclusionList.contains(no);
 	}
 
 	private boolean passNoOnInclusionList(int no) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " is on inclusion list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " is on inclusion list");
 		if (this.noInclusionList.isEmpty()) {
 			return true;
 		}
@@ -333,60 +333,60 @@ public class StdFilter {
 	}
 
 	private boolean passNoEqualOrBellowMaxLimit(int no) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " <= max limit");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " <= max limit");
 		if (no <= this.maxLimit) {
-			display(this.getClass().getSimpleName(), "\t\t it is");
+			debugDisplay(this.getClass().getSimpleName(), "\t\t it is");
 			return true;
 		}
-		display(this.getClass().getSimpleName(), "\t\t it is not");
+		debugDisplay(this.getClass().getSimpleName(), "\t\t it is not");
 		return false;
 	}
 
 	private boolean passNoEqualOrOverMinLimit(int no) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " >= min limit");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if no " + no + " >= min limit");
 		if (no >= this.minLimit) {
-			display(this.getClass().getSimpleName(), "\t\t it is");
+			debugDisplay(this.getClass().getSimpleName(), "\t\t it is");
 			return true;
 		}
-		display(this.getClass().getSimpleName(), "\t\t it is not");
+		debugDisplay(this.getClass().getSimpleName(), "\t\t it is not");
 		return false;
 	}
 
 	private boolean passTxtExcludesSubtext(String txt) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if text " + txt + " excludes all subtexts from list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if text " + txt + " excludes all subtexts from list");
 		Iterator<String> it = excludesSubtextList.iterator();
 		while (it.hasNext()) {
 			String subTxt = it.next();
-			display(this.getClass().getSimpleName(), "\t Does text " + txt + " contains subtext " + subTxt + " ?");
+			debugDisplay(this.getClass().getSimpleName(), "\t Does text " + txt + " contains subtext " + subTxt + " ?");
 			if (txt.contains(subTxt)) {
-				display(this.getClass().getSimpleName(), "\t\t It contains");
+				debugDisplay(this.getClass().getSimpleName(), "\t\t It contains");
 				return false;
 			}
-			display(this.getClass().getSimpleName(), "\t\t It does not contains");
+			debugDisplay(this.getClass().getSimpleName(), "\t\t It does not contains");
 		}
 		return true;
 	}
 
 	private boolean passTxtContainsSubtext(String txt) {
-		display(this.getClass().getSimpleName(), "\t Analyzing if text " + txt + " contains all subtexts from list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing if text " + txt + " contains all subtexts from list");
 		if (containsSubtextList.isEmpty()) {
 			return true;
 		}
 		Iterator<String> it = containsSubtextList.iterator();
 		while (it.hasNext()) {
 			String subTxt = it.next();
-			display(this.getClass().getSimpleName(), "\t Does text " + txt + " contains subtext " + subTxt + " ?");
+			debugDisplay(this.getClass().getSimpleName(), "\t Does text " + txt + " contains subtext " + subTxt + " ?");
 			if (isFalse(txt.contains(subTxt))) {
-				display(this.getClass().getSimpleName(), "\t\t It does not contains");
+				debugDisplay(this.getClass().getSimpleName(), "\t\t It does not contains");
 				return false;
 			}
-			display(this.getClass().getSimpleName(), "\t\t It contains");
+			debugDisplay(this.getClass().getSimpleName(), "\t\t It contains");
 		}
 		return true;
 	}
 
 	private boolean passTxtInclusionList(String txt) {
-		display(this.getClass().getSimpleName(), "\t Analyzing passing of text " + txt + " versus inclusion list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing passing of text " + txt + " versus inclusion list");
 		if (txtInclusionList.isEmpty()) {
 			return true;
 		}
@@ -394,7 +394,7 @@ public class StdFilter {
 	}
 
 	private boolean passTxtExclusionList(String txt) {
-		display(this.getClass().getSimpleName(), "\t Analyzing passing of text " + txt + " versus exclusion list");
+		debugDisplay(this.getClass().getSimpleName(), "\t Analyzing passing of text " + txt + " versus exclusion list");
 		return !txtExclusionList.contains(txt);
 	}
 }

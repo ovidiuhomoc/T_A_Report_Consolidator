@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -48,11 +49,13 @@ public class Testing_the_content_parser_by_mapping_unit {
 			TableHeader testProfileTableHeader = testProfile.getTableHeader();
 
 			// When
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
 
 			// Then
-			assertNotNull(contentParser);
-		} catch (connectionNotInitialized | nullNameConnection | nullArgument | InterruptedException | ExecutionException | dateOrTimeMissing e) {
+			assertThrows(ExecutionException.class, () -> {
+				new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			});
+		} catch (connectionNotInitialized | nullNameConnection | nullArgument | InterruptedException
+				| ExecutionException | dateOrTimeMissing e) {
 			e.printStackTrace();
 		}
 	}
@@ -86,7 +89,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 			testProfileTableHeader.changeMappingUnitOfColumnWithName(columnName,
 					testProfile.getMappingCollection().getMappingUnitdByName(mappingField));
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 			String stringToBeParsed = "25.11.2022";
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 			LocalDate expectedDate = LocalDate.parse(stringToBeParsed, formatter);
@@ -154,13 +158,15 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 			// Then6
 			assertThrows(ExceptionsPack.cantBeParsedWithCurrentMappingMask.class, () -> {
-				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(
+						testProfileTableHeader.getColsPropertiesList());
 				contentParser2.parse(stringToBeParsedForException, columnNameForException);
 			});
 
-		} catch (nullNameConnection | IOException | InterruptedException | ExecutionException | searchCantFindMappingUnitInCollection
-				| nullColumnPropertiesPassed | columnPropertiesDoesNotExist | cantBeParsedWithCurrentMappingMask
-				| parsingFailedDueToNullMappingMask | connectionNotInitialized | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+		} catch (nullNameConnection | IOException | InterruptedException | ExecutionException
+				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | connectionNotInitialized
+				| nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -186,7 +192,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			testProfileTableHeader.changeMappingUnitOfColumnWithName(columnName,
 					testProfile.getMappingCollection().getMappingUnitdByName(mappingField));
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 			String stringToBeParsed = "11:59:59 AM";
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
 			LocalTime expectedTime = LocalTime.parse(stringToBeParsed, formatter);
@@ -270,13 +277,15 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 			// Then6
 			assertThrows(ExceptionsPack.cantBeParsedWithCurrentMappingMask.class, () -> {
-				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(
+						testProfileTableHeader.getColsPropertiesList());
 				contentParser2.parse(stringToBeParsedForException, columnNameForException);
 			});
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -302,7 +311,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			testProfileTableHeader.changeMappingUnitOfColumnWithName(columnName,
 					testProfile.getMappingCollection().getMappingUnitdByName(mappingField));
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 			String stringToBeParsed = "31.12.2022 11:59:59 AM";
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d.M.yyyy h:m:ss a");
 			LocalDateTime expectedTime = LocalDateTime.parse(stringToBeParsed, formatter);
@@ -317,13 +327,15 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 			// Then2
 			assertThrows(ExceptionsPack.cantBeParsedWithCurrentMappingMask.class, () -> {
-				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+				ContentParserByMappingUnit<?> contentParser2 = new ContentParserByMappingUnit<>(
+						testProfileTableHeader.getColsPropertiesList());
 				contentParser2.parse(stringToBeParsedForException, columnNameForException);
 			});
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -352,7 +364,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			testProfileTableHeader.changeMappingUnitOfColumnWithName(columnName,
 					testProfile.getMappingCollection().getMappingUnitdByName(mappingField));
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 			String stringToBeParsed = "03";
 
 			// Then
@@ -375,7 +388,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -394,8 +408,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			when(mockSource.getNextLine()).thenReturn(
 					"Event Id,Date,Time,Date and Time,Event Severity Category,Event,Event Count,Signaling Device,Employee Unique ID,Employee Full Name,Custom Text 2ch & 2 digits");
 			testProfileTableHeader.scanForColsPropertiesMock(mockSource);
-			testProfileMappingCollection.addMappingUnit(new MappingUnit("Large Number",
-					new MaskTemplate().addNumber(), MappingType.FixedDigitNumber));
+			testProfileMappingCollection.addMappingUnit(
+					new MappingUnit("Large Number", new MaskTemplate().addNumber(), MappingType.FixedDigitNumber));
 
 			// When
 			String columnName = "Event Count";
@@ -404,7 +418,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			testProfileTableHeader.changeMappingUnitOfColumnWithName(columnName,
 					testProfile.getMappingCollection().getMappingUnitdByName(mappingField));
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 			String stringToBeParsed = "1234567890";
 
 			// Then
@@ -421,7 +436,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -441,7 +457,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 					"Event Id,Date,Time,Date and Time,Event Severity Category,Event,Event Count,Signaling Device,Employee Unique ID,FirstName,MiddleName,LastName,Employee Full Name,Custom Text 2ch & 2 digits");
 			testProfileTableHeader.scanForColsPropertiesMock(mockSource);
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 
 			// When1
 			testProfileMappingCollection.addMappingUnit(new MappingUnit("Signaling Device",
@@ -531,8 +548,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 			assertEquals("John Doe", contentParser.parse(stringToBeParsed, columnName));
 
 			// When7
-			testProfileMappingCollection.addMappingUnit(
-					new MappingUnit("Event", new MaskTemplate().addAnyString(), MappingType.Event));
+			testProfileMappingCollection
+					.addMappingUnit(new MappingUnit("Event", new MaskTemplate().addAnyString(), MappingType.Event));
 
 			columnName = "Event";
 			mappingField = "Event";
@@ -547,7 +564,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}
@@ -567,7 +585,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 					"Event Id,Date,Time,Date and Time,Event Severity Category,Event,Signaling Device,Employee Unique ID,Employee Full Name,Custom Text 2ch - 2 digits - 1 special ch - space - 2 digits");
 			testProfileTableHeader.scanForColsPropertiesMock(mockSource);
 
-			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(testProfileTableHeader.getColsPropertiesList());
+			ContentParserByMappingUnit<?> contentParser = new ContentParserByMappingUnit<>(
+					testProfileTableHeader.getColsPropertiesList());
 
 			// When1
 			testProfileMappingCollection.addMappingUnit(new MappingUnit(
@@ -597,7 +616,8 @@ public class Testing_the_content_parser_by_mapping_unit {
 
 		} catch (nullNameConnection | connectionNotInitialized | IOException | InterruptedException | ExecutionException
 				| searchCantFindMappingUnitInCollection | nullColumnPropertiesPassed | columnPropertiesDoesNotExist
-				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument | dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
+				| cantBeParsedWithCurrentMappingMask | parsingFailedDueToNullMappingMask | nullArgument
+				| dateOrTimeMissing | headerNotScanned | cantParseEmptyStringForCurrentType e) {
 			e.printStackTrace();
 		}
 	}

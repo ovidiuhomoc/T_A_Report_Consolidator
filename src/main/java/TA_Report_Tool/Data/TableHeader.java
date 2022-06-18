@@ -240,4 +240,19 @@ public class TableHeader {
 		}
 		return true;
 	}
+
+	public ColumnProperties getColPropertiesByMappingType(MappingType mappingType) throws columnPropertiesDoesNotExist, InterruptedException, ExecutionException, connectionNotInitialized, dateOrTimeMissing, nullArgument, nullColumnPropertiesPassed {
+		if (isNull(mappingType)) {
+			throw new ExceptionsPack.nullColumnPropertiesPassed("The parameter for column mapping type is null");
+		}
+
+		ArrayList<ColumnProperties> columnsPropertiesCollection = this.getColsPropertiesList();
+		for (ColumnProperties x : columnsPropertiesCollection) {
+			if (x.getMappingUnit().getType() == mappingType) {
+				return x;
+			}
+		}
+		throw new ExceptionsPack.columnPropertiesDoesNotExist(
+				"The header column with type " + mappingType + " does not exist");
+	}
 }

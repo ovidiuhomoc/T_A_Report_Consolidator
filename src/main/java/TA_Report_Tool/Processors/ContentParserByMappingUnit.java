@@ -31,7 +31,7 @@ public class ContentParserByMappingUnit<T> {
 		this.listOfColumnProperties = listOfColumnProperties;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "hiding" })
 	public <T> T parse(String stringToBeParsed, String columnName)
 			throws nullColumnPropertiesPassed, InterruptedException, ExecutionException, connectionNotInitialized,
 			columnPropertiesDoesNotExist, cantBeParsedWithCurrentMappingMask, parsingFailedDueToNullMappingMask,
@@ -45,12 +45,16 @@ public class ContentParserByMappingUnit<T> {
 
 		if ((isLimitedValue()) && !stringSizeWithinLimits(stringToBeParsed, minCountOfCh, maxCountOfCh)) {
 			throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-					"The row can't be parsed with current mask as the string size does not fit in the expected size");
+					"The row can't be parsed with current mask as the string size does not fit in the expected size.\n The mask indicates a specific limited number of ch. and string does not fit in min("
+							+ minCountOfCh + ") and max(" + maxCountOfCh + ").\nThe String is:" + stringToBeParsed
+							+ " and its size is:" + stringToBeParsed.length() + " and column name is:" + columnName);
 		}
 
 		if ((!isLimitedValue()) && (stringToBeParsed.length() > maxCountOfCh)) {
 			throw new ExceptionsPack.cantBeParsedWithCurrentMappingMask(
-					"The row can't be parsed with current mask as the string size does not fit in the expected size");
+					"The row can't be parsed with current mask as the string size does not fit in the expected size.\n The mask indicates a not a limited number of ch. but string is over system's capable max("
+							+ maxCountOfCh + ").\nThe tring is:" + stringToBeParsed + " and its size is:"
+							+ stringToBeParsed.length() + " and column name is:" + columnName);
 		}
 
 		switch (currentColumnMapping.getType()) {
@@ -235,9 +239,12 @@ public class ContentParserByMappingUnit<T> {
 			throw new ExceptionsPack.cantParseEmptyStringForCurrentType(
 					"Parsing failed as the string to be parsed is empty and is unsupported for current type");
 		}
-		int parsedInt = 0;
-		parsedInt = Integer.parseInt(stringToBeParsed);
-		return parsedInt;
+		if (stringToBeParsed.contains(".")) {
+			return Float.parseFloat(stringToBeParsed);
+		} else {
+			return Integer.parseInt(stringToBeParsed);
+		}
+
 	}
 
 	private Object parseTime(String stringToBeParsed, ArrayList<MaskingItem> mask)

@@ -1,5 +1,7 @@
 package TA_Report_Tool.MainApp;
 
+import java.util.ArrayList;
+import static TA_Report_Tool.Tools.debug.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -8,21 +10,31 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import TA_Report_Tool.Data.ColumnProperties;
 import TA_Report_Tool.Data.ConnType;
 import TA_Report_Tool.Data.Connection;
 import TA_Report_Tool.Data.DataSource;
 import TA_Report_Tool.Data.MappingCollection;
+import TA_Report_Tool.Data.MappingType;
+import TA_Report_Tool.Data.MappingUnit;
+import TA_Report_Tool.Data.MaskTemplate;
 import TA_Report_Tool.Data.TableData;
 import TA_Report_Tool.Data.TableHeader;
 import TA_Report_Tool.Filters.TAfiltersAndSettings;
+import TA_Report_Tool.MainApp.ExceptionsPack.TAreportGenerationException;
+import TA_Report_Tool.MainApp.ExceptionsPack.columnPropertiesDoesNotExist;
 import TA_Report_Tool.MainApp.ExceptionsPack.connectionNotInitialized;
 import TA_Report_Tool.MainApp.ExceptionsPack.dateOrTimeMissing;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
+import TA_Report_Tool.MainApp.ExceptionsPack.nullColumnPropertiesPassed;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullNameConnection;
 import TA_Report_Tool.MainApp.ExceptionsPack.profileDoesNotExist;
 import TA_Report_Tool.MainApp.ExceptionsPack.rowParameterNotHigherThanZero;
+import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.tableDataNotInitialized;
 import TA_Report_Tool.Processors.ContentScannerThreadWrapper;
+import TA_Report_Tool.Processors.TAreportGenerator;
+
 import static TA_Report_Tool.Tools.check.*;
 
 public class Profile {
@@ -415,7 +427,7 @@ public class Profile {
 	 * read.
 	 */
 
-	public TableData getTableData() {
+	public TableData getTableData() throws InterruptedException, ExecutionException {
 		return this.tableData;
 	}
 
@@ -447,16 +459,13 @@ public class Profile {
 	}
 
 	public boolean isTableContentScanningAndParsingDone() {
-		if (this.currentRowScanResults.isDone()) {
-			return true;
-		}
-		return false;
+		return this.currentRowScanResults.isDone();
 	}
 
 	public void captureExceptionsAfterScanning() throws InterruptedException, ExecutionException {
-		if (this.currentRowScanResults.isDone()) {
-			this.currentRowScanResults.get();
-		}
+		// if (this.currentRowScanResults.isDone()) {
+		this.currentRowScanResults.get();
+		// }
 	}
 
 	/*
@@ -489,7 +498,136 @@ public class Profile {
 		return this.localFiltersAndSettings;
 	}
 
-	public TableData getFilteredData() {
+	public TableData getFilteredData() throws tableDataNotInitialized, InterruptedException, ExecutionException,
+			connectionNotInitialized, dateOrTimeMissing, nullArgument, rowParameterNotHigherThanZero {
+		if (isNull(this.filteredTableData)) {
+			this.filterTableData();
+		}
+		if (isFalse(this.filteredTableData.isInitialized())) {
+			this.filterTableData();
+		}
 		return this.filteredTableData;
+	}
+
+	/*
+	 * ========================== Section 8 ===========================
+	 * ======================= TA Calculation =========================
+	 *
+	 */
+
+	private TableData detailedTAreport = null;
+	private TableData summaryTAreport = null;
+	private Future<Void> TAreportGenerator;
+	private ExecutorService executorForTAGenerator = Executors.newFixedThreadPool(2);
+
+	public void generateTAreport()
+			throws tableDataNotInitialized, InterruptedException, ExecutionException, connectionNotInitialized,
+			dateOrTimeMissing, nullArgument, TAreportGenerationException, columnPropertiesDoesNotExist,
+			nullColumnPropertiesPassed, searchCantFindMappingUnitInCollection, rowParameterNotHigherThanZero {
+
+		debugDisplay(this.getClass().getSimpleName(), "TA report generator started");
+
+		if (isNull(this.filteredTableData)) {
+			throw new ExceptionsPack.tableDataNotInitialized(
+					"Can't generate the TA report, as the filtered table is null and not initialized. Typpically this step happens upon filterTableData method request.");
+		}
+
+		if (isFalse(this.filteredTableData.isInitialized())) {
+			throw new ExceptionsPack.tableDataNotInitialized(
+					"Can't generate the TA report, as there is no filtered table initialized. Typpically this step happens upon filterTableData method request.");
+		}
+
+		this.detailedTAreport = new TableData();
+		this.summaryTAreport = new TableData();
+
+		setupTAReportsStructures();
+
+		if (isNull(this.getFilteredData())) {
+			throw new ExceptionsPack.TAreportGenerationException(
+					"TA report can't be generated as the data have not been filtered");
+		}
+
+		TAreportGenerator taReportGen = new TAreportGenerator();
+		taReportGen.transferPrerequisites(this, this.localFiltersAndSettings, this.detailedTAreport,
+				this.summaryTAreport);
+		TAreportGenerator = this.executorForTAGenerator.submit(taReportGen);
+	}
+
+	public void captureExceptionsAfterGeneratingReport()
+			throws InterruptedException, ExecutionException, TAreportGenerationException {
+		if (isNull(this.TAreportGenerator)) {
+			throw new ExceptionsPack.TAreportGenerationException("The TA Report Generator object is null");
+		}
+
+		this.TAreportGenerator.get();
+	}
+
+	public boolean isTAgenerationDone() {
+		return this.TAreportGenerator.isDone();
+	}
+
+	public TableData getDetailedTAReport()
+			throws InterruptedException, ExecutionException, TAreportGenerationException {
+		if (isFalse(isTAgenerationDone())) {
+			captureExceptionsAfterGeneratingReport();
+		}
+		while (isFalse(isTAgenerationDone())) {
+		}
+		return this.detailedTAreport;
+	}
+
+	public TableData getSummaryTAReport() throws InterruptedException, ExecutionException, TAreportGenerationException {
+		if (isFalse(isTAgenerationDone())) {
+			captureExceptionsAfterGeneratingReport();
+		}
+		while (isFalse(isTAgenerationDone())) {
+		}
+		return this.summaryTAreport;
+	}
+
+	private void setupTAReportsStructures()
+			throws columnPropertiesDoesNotExist, InterruptedException, ExecutionException, connectionNotInitialized,
+			dateOrTimeMissing, nullArgument, nullColumnPropertiesPassed, searchCantFindMappingUnitInCollection {
+
+		ArrayList<ColumnProperties> structureOfDetailedReport = new ArrayList<>();
+		ArrayList<ColumnProperties> structureOfSummaryReport = new ArrayList<>();
+
+		this.getMappingCollection().addMappingUnit(new MappingUnit("TA Day",
+				new MaskTemplate().addDay().addSep(".").addMonth().addSep(".").addYYYYear(), MappingType.Date));
+		this.getMappingCollection().addMappingUnit(
+				new MappingUnit("TA Month", new MaskTemplate().addAnyString(), MappingType.CustomFieldText));
+		this.getMappingCollection()
+				.addMappingUnit(new MappingUnit("Time Sum", new MaskTemplate().addNumber(), MappingType.Number));
+
+		MappingUnit TAday = this.getMappingCollection().getMappingUnitdByName("TA Day");
+		MappingUnit TAmonth = this.getMappingCollection().getMappingUnitdByName("TA Month");
+		MappingUnit timeSum = this.getMappingCollection().getMappingUnitdByName("Time Sum");
+
+		structureOfDetailedReport
+				.add(this.getTableHeader().getColPropertiesByMappingType(MappingType.EmployeeUniqueId));
+		structureOfSummaryReport.add(this.getTableHeader().getColPropertiesByMappingType(MappingType.EmployeeUniqueId));
+
+		if (isNotNull(this.localFiltersAndSettings.getExtraColsToDisplay())) {
+			for (ColumnProperties x : this.localFiltersAndSettings.getExtraColsToDisplay()) {
+				structureOfDetailedReport.add(x);
+				structureOfSummaryReport.add(x);
+			}
+		}
+
+		structureOfSummaryReport.add(new ColumnProperties("TA Month", true, TAmonth, 0));
+		structureOfDetailedReport.add(new ColumnProperties("TA Month", true, TAmonth, 0));
+		structureOfDetailedReport.add(new ColumnProperties("TA Day", true, TAday, 0));
+
+		structureOfDetailedReport.add(new ColumnProperties("Standard Working Hours", true, timeSum, 0));
+		structureOfSummaryReport.add(new ColumnProperties("Standard Working Hours", true, timeSum, 0));
+
+		structureOfDetailedReport.add(new ColumnProperties("Overtime Hours", true, timeSum, 0));
+		structureOfSummaryReport.add(new ColumnProperties("Overtime Hours", true, timeSum, 0));
+
+		structureOfDetailedReport.add(new ColumnProperties("Total Worked Hours", true, timeSum, 0));
+		structureOfSummaryReport.add(new ColumnProperties("Total Worked Hours", true, timeSum, 0));
+
+		this.detailedTAreport.initializeTableData(structureOfDetailedReport);
+		this.summaryTAreport.initializeTableData(structureOfSummaryReport);
 	}
 }

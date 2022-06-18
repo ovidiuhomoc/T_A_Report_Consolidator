@@ -287,7 +287,7 @@ public class Testing_the_storage_in_TableData {
 
 			ArrayList<String> expectedList2 = new ArrayList<>();
 			expectedList2.add("Turnstile 1 Reader");
-			expectedList2.add("Turnstile 1 Reader");
+			expectedList2.add("Turnstile 2 Reader");
 			expectedList2.add("Turnstile 1 Reader");
 			expectedList2.add("Turnstile 1 Reader");
 			expectedList2.add("IT Room Door");

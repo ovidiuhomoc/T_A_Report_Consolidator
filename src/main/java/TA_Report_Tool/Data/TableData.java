@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 
 import TA_Report_Tool.Filters.StdFilter;
@@ -25,6 +28,7 @@ import TA_Report_Tool.MainApp.ExceptionsPack.nullColumnPropertiesPassed;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullDataReceivedForParsing;
 import TA_Report_Tool.MainApp.ExceptionsPack.parsingFailedDueToNullMappingMask;
 import TA_Report_Tool.MainApp.ExceptionsPack.rowParameterNotHigherThanZero;
+import TA_Report_Tool.MainApp.ExceptionsPack.tableDataMethodError;
 import TA_Report_Tool.MainApp.ExceptionsPack.tableDataNotInitialized;
 import TA_Report_Tool.MainApp.ExceptionsPack.tableLengthAndDataLengthNotMatching;
 import TA_Report_Tool.Processors.ContentParserByMappingUnit;
@@ -153,6 +157,10 @@ public class TableData {
 	}
 
 	public void displayColumnPropertiesForDebugging() {
+		displayColumnPropertiesForDebugging("");
+	}
+
+	public void displayColumnPropertiesForDebugging(String tableName) {
 		TableDisplay tDisp = new TableDisplay();
 
 		tDisp.add("Column Header Index");
@@ -172,10 +180,15 @@ public class TableData {
 				}
 			}
 		}
-		tDisp.display();
+		tDisp.display(tableName);
 	}
 
 	public void displayTableContentForDebugging() throws tableDataNotInitialized, rowParameterNotHigherThanZero {
+		displayTableContentForDebugging("");
+	}
+
+	public void displayTableContentForDebugging(String tableName)
+			throws tableDataNotInitialized, rowParameterNotHigherThanZero {
 		TableDisplay tDisp = new TableDisplay();
 
 		if (isInitialized()) {
@@ -192,7 +205,7 @@ public class TableData {
 				}
 			}
 		}
-		tDisp.display();
+		tDisp.display(tableName);
 	}
 
 	private void parseAndStoreRow(String[] arrayRowOfDataUnparsed)
@@ -212,7 +225,9 @@ public class TableData {
 		}
 		this.rowCount++;
 
-		parseDateAndTime();
+		if (isFalse(this.dateTimeFullCheckSuppresion)) {
+			parseDateAndTime();
+		}
 	}
 
 	private void parseDateAndTime()
@@ -265,7 +280,17 @@ public class TableData {
 		return false;
 	}
 
+	private boolean dateTimeFullCheckSuppresion = false;
+
+	public void suppressDateTimeFullCheck() {
+		this.dateTimeFullCheckSuppresion = true;
+	}
+
 	private boolean hasDateAndTime() {
+		if (this.dateTimeFullCheckSuppresion) {
+			return true;
+		}
+
 		boolean dateFlag = false;
 		boolean timeFlag = false;
 
@@ -330,7 +355,11 @@ public class TableData {
 					return (String) currentColumn.getDataAt(row);
 				case FixedDigitNumber:
 				case Number:
-					return (Integer) currentColumn.getDataAt(row);
+					if (isInteger(String.valueOf(currentColumn.getDataAt(row)))) {
+						return (Integer) currentColumn.getDataAt(row);
+					} else {
+						return (Float) currentColumn.getDataAt(row);
+					}
 				}
 			}
 		}
@@ -375,15 +404,32 @@ public class TableData {
 					return tempList3.toArray(new String[0]);
 				case FixedDigitNumber:
 				case Number:
-					ArrayList<Integer> tempList4 = new ArrayList<>();
-					for (int row = 1; row <= this.rowCount; row++) {
-						tempList4.add((Integer) currentColumn.getDataAt(row));
+					if (isInteger(String.valueOf(currentColumn.getDataAt(1)))) {
+						ArrayList<Integer> tempList4 = new ArrayList<>();
+						for (int row = 1; row <= this.rowCount; row++) {
+							tempList4.add((Integer) currentColumn.getDataAt(row));
+						}
+						return tempList4.toArray(new Integer[0]);
+					} else {
+						ArrayList<Float> tempList4 = new ArrayList<>();
+						for (int row = 1; row <= this.rowCount; row++) {
+							tempList4.add((Float) currentColumn.getDataAt(row));
+						}
+						return tempList4.toArray(new Float[0]);
 					}
-					return tempList4.toArray(new Integer[0]);
 				}
 			}
 		}
 		return null;
+	}
+
+	private boolean isInteger(String numberToBeParsed) {
+		try {
+			Integer.parseInt(numberToBeParsed);
+			return true;
+		} catch (NumberFormatException ex) {
+			return false;
+		}
 	}
 
 	public String[] rowToArrayExceptDateAndTime(int row) throws rowParameterNotHigherThanZero {
@@ -408,17 +454,18 @@ public class TableData {
 		this.initializeTableData(sourceTableData.getListOfColumnProperties());
 	}
 
-	public boolean passFiltersAtRow(int i, TAfiltersAndSettings localFiltersAndSettings) throws rowParameterNotHigherThanZero {
-		display(this.getClass().getSimpleName(), "Analyzing filters pass of row " + i);
+	public boolean passFiltersAtRow(int i, TAfiltersAndSettings localFiltersAndSettings)
+			throws rowParameterNotHigherThanZero {
+		debugDisplay(this.getClass().getSimpleName(), "Analyzing filters pass of row " + i);
 
 		if (isFalse(this.isInitialized())) {
-			display(this.getClass().getSimpleName(), "Table Data is not initialized");
+			debugDisplay(this.getClass().getSimpleName(), "Table Data is not initialized");
 			return false;
 		}
 
 		if (isFalse(localFiltersAndSettings.dateTime()
 				.passDateTimeFilter((LocalDateTime) this.dateTimeColumn.getDataAt(i)))) {
-			display(this.getClass().getSimpleName(), "Date Time Filter was not passed");
+			debugDisplay(this.getClass().getSimpleName(), "Date Time Filter was not passed");
 			return false;
 		}
 
@@ -427,20 +474,158 @@ public class TableData {
 			StdFilter currentFilter = localFiltersAndSettings.getFilterForColumn(temp.getColumnName());
 
 			if (isNotNull(currentFilter) && isFalse(currentFilter.passFilterCriterias(temp.getDataAt(i)))) {
-				display(this.getClass().getSimpleName(),
+				debugDisplay(this.getClass().getSimpleName(),
 						"The filter for column " + temp.getColumnName() + " did not passed at row " + i);
 				return false;
 			}
-			display(this.getClass().getSimpleName(), "Column " + temp.getColumnName() + " filters passed");
+			debugDisplay(this.getClass().getSimpleName(), "Column " + temp.getColumnName() + " filters passed");
 		}
 		return true;
 	}
 
-	public void copyDataRowFrom(int i, TableData sourceTableData) throws rowParameterNotHigherThanZero {
+	public void copyDataRowFrom(int i, TableData sourceTableData)
+			throws rowParameterNotHigherThanZero, tableDataNotInitialized {
 		TableData destinationTableData = this;
 		for (ColumnData currentColumn : destinationTableData.columnsDataStorage) {
 			currentColumn.addData(sourceTableData.getDataOfColAtRow(currentColumn.getColumnName(), i));
 		}
+		destinationTableData.dateTimeColumn.addData(sourceTableData.getDateTimeOfRow(i));
 		this.rowCount++;
+	}
+
+	public ColumnProperties getColumnWithMappingType(MappingType mapType) {
+		for (ColumnProperties x : this.listOfColumnProperties) {
+			if (x.getMappingUnit().getType() == mapType) {
+				return x;
+			}
+		}
+		return null;
+	}
+
+	private Map<String, Integer> allEncountersFromSecondCol = new HashMap<>();
+
+	public String getMostEncounteredEntryOfColForEmpID(String empID, String colName)
+			throws tableDataNotInitialized, rowParameterNotHigherThanZero {
+		ColumnProperties empIDcol = getColumnWithMappingType(MappingType.EmployeeUniqueId);
+
+		for (int i = 1; i <= getRowCount(); i++) {
+			if (getDataOfColAtRow(empIDcol.getName(), i).equals(empID)) {
+				addToMap(String.valueOf(getDataOfColAtRow(colName, i)));
+			}
+		}
+
+		String mostEncounteredEntry = null;
+		int mostEncounteredEntryCount = 0;
+
+		for (Map.Entry<String, Integer> entry : this.allEncountersFromSecondCol.entrySet()) {
+			String entryKey = entry.getKey();
+			int entryValue = entry.getValue();
+
+			if (entryValue > mostEncounteredEntryCount) {
+				mostEncounteredEntryCount = entryValue;
+				mostEncounteredEntry = entryKey;
+			}
+		}
+
+		allEncountersFromSecondCol.clear();
+		return mostEncounteredEntry;
+	}
+
+	private void addToMap(String encounteredEntry) {
+		if (this.allEncountersFromSecondCol.containsKey(encounteredEntry)) {
+			this.allEncountersFromSecondCol.put(encounteredEntry,
+					this.allEncountersFromSecondCol.get(encounteredEntry) + 1);
+		} else {
+			this.allEncountersFromSecondCol.put(encounteredEntry, 1);
+		}
+	}
+
+	public ArrayList<Object> vlookup(Object lookupValue, String lookupColumn, String returnResultsColumn)
+			throws tableDataMethodError, rowParameterNotHigherThanZero, tableDataNotInitialized {
+		boolean lookupColumnExists = false;
+		MappingType lookupColType = null;
+		boolean returnResultsColumnExists = false;
+
+		for (ColumnProperties x : this.listOfColumnProperties) {
+			if (x.getName().equals(lookupColumn)) {
+				lookupColumnExists = true;
+				lookupColType = x.getMappingUnit().getType();
+			}
+			if (x.getName().equals(returnResultsColumn)) {
+				returnResultsColumnExists = true;
+			}
+		}
+
+		if (isFalse(lookupColumnExists)) {
+			throw new ExceptionsPack.tableDataMethodError("Column " + lookupColumn + " in which value "
+					+ String.valueOf(lookupValue) + " is looked up, does not exist ");
+		}
+		if (isFalse(returnResultsColumnExists)) {
+			throw new ExceptionsPack.tableDataMethodError("Column " + lookupColumn + " in which value "
+					+ String.valueOf(lookupValue) + " is looked up, exists, but column " + returnResultsColumn
+					+ " that should contain the result, does not exist");
+		}
+
+		ArrayList<Object> resultsToReturn = new ArrayList<>();
+
+		for (int i = 1; i <= this.getRowCount(); i++) {
+			switch (lookupColType) {
+			case Date:
+				LocalDate tempLookupValue = (LocalDate) lookupValue;
+				LocalDate tempTableValueAtRow = (LocalDate) this.getDataOfColAtRow(lookupColumn, i);
+				if (tempLookupValue.equals(tempTableValueAtRow)) {
+					resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+				}
+				break;
+			case DateAndTime:
+				LocalDateTime tempLookupValue1 = (LocalDateTime) lookupValue;
+				LocalDateTime tempTableValueAtRow1 = (LocalDateTime) this.getDataOfColAtRow(lookupColumn, i);
+				if (tempLookupValue1.equals(tempTableValueAtRow1)) {
+					resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+				}
+				break;
+			case Time:
+				LocalTime tempLookupValue2 = (LocalTime) lookupValue;
+				LocalTime tempTableValueAtRow2 = (LocalTime) this.getDataOfColAtRow(lookupColumn, i);
+				if (tempLookupValue2.equals(tempTableValueAtRow2)) {
+					resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+				}
+				break;
+			case EmployeeFirstName:
+			case EmployeeFullName:
+			case EmployeeLastName:
+			case EmployeeMiddleName:
+			case EmployeeUniqueId:
+			case Event:
+			case SignalingDevice:
+			case CustomFieldText:
+			case NotSet:
+				String tempLookupValue3 = (String) lookupValue;
+				String tempTableValueAtRow3 = (String) this.getDataOfColAtRow(lookupColumn, i);
+				if (tempLookupValue3.equals(tempTableValueAtRow3)) {
+					resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+				}
+				break;
+			case FixedDigitNumber:
+			case Number:
+				if (isInteger(String.valueOf(lookupValue))) {
+					int tempLookupValue4 = (Integer) lookupValue;
+					int tempTableValueAtRow4 = (Integer) this.getDataOfColAtRow(lookupColumn, i);
+					if (tempLookupValue4 == tempTableValueAtRow4) {
+						resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+					}
+				} else {
+					float tempLookupValue4 = (Float) lookupValue;
+					float tempTableValueAtRow4 = (Float) this.getDataOfColAtRow(lookupColumn, i);
+					if (tempLookupValue4 == tempTableValueAtRow4) {
+						resultsToReturn.add(this.getDataOfColAtRow(returnResultsColumn, i));
+					}
+
+				}
+
+				break;
+			}
+		}
+		return resultsToReturn;
 	}
 }

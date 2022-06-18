@@ -2,6 +2,18 @@ package TA_Report_Tool.MainApp;
 
 public class ExceptionsPack {
 
+	public static class tableDataMethodError extends Exception {
+		public tableDataMethodError(String msg) {
+			super(msg);
+		}
+	}
+
+	public static class TAreportGenerationException extends Exception {
+		public TAreportGenerationException(String msg) {
+			super(msg);
+		}
+	}
+
 	public static class cantParseEmptyStringForCurrentType extends Exception {
 		public cantParseEmptyStringForCurrentType(String msg) {
 			super(msg);

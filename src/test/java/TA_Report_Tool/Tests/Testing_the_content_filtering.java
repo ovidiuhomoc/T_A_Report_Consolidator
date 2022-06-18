@@ -1,14 +1,14 @@
 package TA_Report_Tool.Tests;
 
-import static TA_Report_Tool.Tools.check.isFalse;
+import static TA_Report_Tool.Tools.check.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.concurrent.ExecutionException;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,6 @@ import TA_Report_Tool.MainApp.ExceptionsPack.rowParameterNotHigherThanZero;
 import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.tableDataNotInitialized;
 import TA_Report_Tool.MainApp.Profile;
-import static TA_Report_Tool.Tools.debug.*;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class Testing_the_content_filtering {
@@ -64,9 +63,12 @@ public class Testing_the_content_filtering {
 				ColumnProperties temp = x;
 				testProfile.dataFiltersAndSettings().addNewFilter("Filter for column: " + temp.getName(), temp);
 			}
-
+			//Then
+			assertTrue(isNotNull(testProfile.getFilteredData()));
+			
+			//When2
 			testProfile.filterTableData();
-			// Then
+			//Then2
 			assertEquals(7, testProfile.getFilteredData().getRowCount());
 
 		} catch (nullArgument | nullNameConnection | InterruptedException | ExecutionException
@@ -323,12 +325,12 @@ public class Testing_the_content_filtering {
 			testProfile.filterTableData();
 
 			// Then3
-			assertEquals(4, testProfile.getFilteredData().getRowCount());
+			assertEquals(3, testProfile.getFilteredData().getRowCount());
 
 			testProfile.dataFiltersAndSettings().getFilterForColumn("Signaling Device of the Event")
 					.removeSubtextExclusion("Door");
 			testProfile.filterTableData();
-			assertEquals(5, testProfile.getFilteredData().getRowCount());
+			assertEquals(4, testProfile.getFilteredData().getRowCount());
 
 			// When4
 			testProfile.dataFiltersAndSettings().getFilterForColumn("Signaling Device of the Event").clearAllListsAndLimits();
@@ -341,7 +343,7 @@ public class Testing_the_content_filtering {
 
 			testProfile.dataFiltersAndSettings().getFilterForColumn("Signaling Device of the Event").addSubtextInclusion("1");
 			testProfile.filterTableData();
-			assertEquals(4, testProfile.getFilteredData().getRowCount());
+			assertEquals(3, testProfile.getFilteredData().getRowCount());
 
 		} catch (nullArgument | nullNameConnection | InterruptedException | ExecutionException
 				| connectionNotInitialized | dateOrTimeMissing | searchCantFindMappingUnitInCollection

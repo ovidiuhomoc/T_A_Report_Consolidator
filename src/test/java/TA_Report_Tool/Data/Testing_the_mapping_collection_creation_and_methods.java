@@ -11,9 +11,9 @@ import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import TA_Report_Tool.MainApp.ExceptionsPack;
-import TA_Report_Tool.MainApp.Profile;
-import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
 import TA_Report_Tool.MainApp.ExceptionsPack.nullArgument;
+import TA_Report_Tool.MainApp.ExceptionsPack.searchCantFindMappingUnitInCollection;
+import TA_Report_Tool.MainApp.Profile;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class Testing_the_mapping_collection_creation_and_methods {

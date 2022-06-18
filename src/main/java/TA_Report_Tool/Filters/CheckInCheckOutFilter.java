@@ -37,7 +37,7 @@ public class CheckInCheckOutFilter {
 		}
 
 		this.checkIn.remove(String.valueOf(string));
-		
+
 		if (this.checkIn.isEmpty()) {
 			this.separateCheckInAndCheckOut = false;
 		}
@@ -57,7 +57,7 @@ public class CheckInCheckOutFilter {
 		}
 
 		this.checkOut.remove(String.valueOf(string));
-		
+
 		if (this.checkOut.isEmpty()) {
 			this.separateCheckInAndCheckOut = false;
 		}
@@ -71,7 +71,7 @@ public class CheckInCheckOutFilter {
 	 * 
 	 * @return
 	 */
-	public boolean areFiltersSeparated() {
+	public boolean individualCheckInCheckOut() {
 		return this.separateCheckInAndCheckOut;
 	}
 
@@ -97,13 +97,13 @@ public class CheckInCheckOutFilter {
 		return false;
 	}
 
-	private ColumnProperties column;
+	private String columnCotainingTheCheckInCheckOut = null;
 
-	public void attachColumn(ColumnProperties column) {
-		this.column = column;
+	public void attachColumn(String string) {
+		this.columnCotainingTheCheckInCheckOut = string;
 	}
 
-	public ColumnProperties getAttachedColumn() {
-		return this.column;
+	public String getAttachedColumn() {
+		return this.columnCotainingTheCheckInCheckOut;
 	}
 }

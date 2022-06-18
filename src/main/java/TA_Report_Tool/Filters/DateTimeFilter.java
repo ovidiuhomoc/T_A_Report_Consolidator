@@ -4,7 +4,7 @@ import static TA_Report_Tool.Tools.check.isFalse;
 import static TA_Report_Tool.Tools.check.isNotNull;
 import static TA_Report_Tool.Tools.check.isNull;
 import static TA_Report_Tool.Tools.check.isZero;
-import static TA_Report_Tool.Tools.debug.display;
+import static TA_Report_Tool.Tools.debug.debugDisplay;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -214,14 +214,14 @@ public class DateTimeFilter {
 	}
 
 	public boolean passDateTimeFilter(LocalDateTime dateTime) {
-		display(this.getClass().getSimpleName(), "LocalDateTime to pass the filters is " + dateTime);
+		debugDisplay(this.getClass().getSimpleName(), "LocalDateTime to pass the filters is " + dateTime);
 
 		if (isFalse(passTimeFilters(dateTime.toLocalTime()))) {
-			display(this.getClass().getSimpleName(), "-------- Time filter failed");
+			debugDisplay(this.getClass().getSimpleName(), "-------- Time filter failed");
 			return false;
 		}
 		if (isFalse(passDateFilter(dateTime.toLocalDate()))) {
-			display(this.getClass().getSimpleName(), "-------- Date filter failed");
+			debugDisplay(this.getClass().getSimpleName(), "-------- Date filter failed");
 			return false;
 		}
 		return true;
@@ -245,18 +245,18 @@ public class DateTimeFilter {
 
 	private boolean passTimeFilters(LocalTime time) {
 		if (passTimeFilter(1, time)) {
-			display(this.getClass().getSimpleName(), "-------- Time filter 1 passes");
+			debugDisplay(this.getClass().getSimpleName(), "-------- Time filter 1 passes");
 			return true;
 		}
-		display(this.getClass().getSimpleName(),
+		debugDisplay(this.getClass().getSimpleName(),
 				"-------- Time filter 1 between " + this.getTimeFilter(1).getStart().toString() + " - "
 						+ this.getTimeFilter(1).getEnd().toString() + " failed");
 
 		if (passTimeFilter(2, time)) {
-			display(this.getClass().getSimpleName(), "-------- Time filter 2 passes");
+			debugDisplay(this.getClass().getSimpleName(), "-------- Time filter 2 passes");
 			return true;
 		}
-		display(this.getClass().getSimpleName(),
+		debugDisplay(this.getClass().getSimpleName(),
 				"-------- Time filter 2 between " + this.getTimeFilter(2).getStart().toString() + " - "
 						+ this.getTimeFilter(2).getEnd().toString() + " failed");
 
