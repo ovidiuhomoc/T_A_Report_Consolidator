@@ -10,6 +10,7 @@ The app can perform such actions for multiple companies and store each setup und
 
 # Backend: 
 Finished.
+
 Final settings & operations order for computing the Time & Attendance, based on a Card History report, can be found in Tests Suite 7 - [Testing_file_generated_by_real_system.java](/src/test/java/TA_Report_Tool/Tests/Testing_file_generated_by_real_system.java)
 
 # Frontend:
